@@ -1,0 +1,1844 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bilancio Energetico be30</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;font-family:Arial,sans-serif;background:#f4f7f6;color:#1e293b;font-size:13px}
+:root{
+  --green:#15803d; --green-b:#22c55e; --green-l:#f0fdf4;
+  --blue:#1e3a8a;  --blue-b:#3b82f6;  --blue-l:#eff6ff;
+  --amber:#b45309; --amber-b:#f59e0b; --amber-l:#fef3c7;
+  --red:#b91c1c;   --red-b:#ef4444;   --red-l:#fef2f2;
+  --purple:#6b21a8; --purple-b:#a855f7; --purple-l:#faf5ff;
+  --gray:#475569;  --border:#cbd5e1;  --card:#fff; --muted:#64748b;
+  --hdr:#0f172a;
+}
+
+/* ══ HEADER ══ */
+header{background:var(--hdr);color:#fff;padding:7px 14px;display:flex;align-items:center;gap:8px;flex-shrink:0;flex-wrap:nowrap}
+.r21-logo{display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:4px 12px;min-width:75px}
+.r21-logo .r21-pow{font-size:8px;opacity:.6;letter-spacing:.5px;text-transform:uppercase}
+.r21-logo .r21-name{font-size:16px;font-weight:900;letter-spacing:1.5px;line-height:1.1}
+.hline{width:1px;height:36px;background:rgba(255,255,255,.2)}
+header h1{font-size:15px;font-weight:700;line-height:1.2}
+header p{font-size:11px;opacity:.7;margin-top:1px}
+.hbadge{background:rgba(255,255,255,.15);border-radius:12px;padding:3px 9px;font-size:10px;white-space:nowrap;font-weight:600}
+.cw{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:5px 12px}
+.cw label{font-size:10px;opacity:.7}
+#cliente{background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,.4);color:#fff;font-size:13px;font-weight:700;width:280px;outline:none;padding:2px 0}
+.hbtns{display:flex;gap:4px;align-items:center;margin-left:auto;flex-wrap:nowrap}
+.hbtn{border:none;border-radius:7px;padding:5px 9px;font-size:10px;font-weight:700;cursor:pointer;transition:background .15s;white-space:nowrap}
+.hbtn.json{background:#fff;color:var(--hdr)}
+.hbtn.imp{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.25)}
+.hbtn.gas{background:#ffbeb3;color:#b91c1c;border:1px solid rgba(185,28,28,.3)}
+.hbtn.print{background:#22c55e;color:#fff}
+.hbtn:hover{opacity:0.9}
+
+/* ══ LAYOUT ══ */
+.layout{display:flex;padding:12px;gap:0;height:calc(100vh - 50px);overflow:hidden}
+.col-left{width:600px;min-width:480px;max-width:780px;overflow-y:auto;flex-shrink:0;padding-right:6px}
+.col-divider{width:8px;cursor:col-resize;flex-shrink:0;position:relative;margin:0 2px}
+.col-divider::after{content:"";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:4px;height:60px;border-radius:4px;background:#cbd5e1}
+.col-divider:hover::after,.col-divider.drg::after{background:#3b82f6;height:80px}
+.col-right{flex:1;min-width:320px;overflow-y:auto;padding-left:6px}
+
+/* CARDS */
+.card{background:var(--card);border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.05);margin-bottom:10px;border:1px solid #e2e8f0}
+.ch{padding:8px 13px;border-radius:10px 10px 0 0;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px}
+.ch.blue  {background:#eff6ff;color:#1e40af}
+.ch.green {background:#f0fdf4;color:#166534}
+.ch.amber {background:#fef3c7;color:#92400e}
+.ch.purple{background:#faf5ff;color:#6b21a8}
+.ch.gray  {background:#f8fafc;color:#334155}
+.cb{padding:10px 13px}
+
+/* INPUT ROWS */
+.ir{display:flex;align-items:center;gap:7px;margin-bottom:6px;min-height:28px}
+.sym{font-family:monospace;font-size:10px;background:#f1f5f9;border-radius:4px;padding:2px 5px;color:#475569;flex-shrink:0;min-width:58px;text-align:center;font-weight:bold}
+.ir label{flex:1;font-size:11px;color:#334155;line-height:1.3}
+.ir label small{color:var(--muted);font-size:10px;display:block}
+.irv{display:flex;align-items:center;gap:4px}
+input[type=number], select{border:1px solid var(--border);border-radius:6px;padding:4px 4px;font-size:12px;width:90px;text-align:right;background:#f8fafc}
+input[type=number]:focus, select:focus{outline:none;border-color:#3b82f6;background:#fff}
+input[type=number][readonly]{background:#f0fdf4;color:var(--green);border-color:#bbf7d0;font-weight:700}
+.unit{font-size:10px;color:var(--muted);white-space:nowrap;width:55px}
+
+.slider-row{display:flex;align-items:center;gap:6px;margin-bottom:4px;margin-left:65px}
+input[type=range]{-webkit-appearance:none;width:120px;height:6px;border-radius:3px;background:#cbd5e1;cursor:pointer;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--blue-b)}
+.range-val{font-size:11px;font-weight:700;color:var(--blue);min-width:24px;text-align:right}
+.ev-total{margin:2px 0 6px 65px;font-size:10px;color:var(--muted)}
+
+.info-box-mini{background:#f8fafc;border-radius:6px;padding:6px 9px;margin-top:4px;font-size:11px;color:#475569;display:flex;align-items:center;gap:6px;border:1px dashed #e2e8f0}
+
+/* ══ CASCATA E RISULTATI ══ */
+.cascade{background:var(--card);border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.05);padding:14px 16px;margin-bottom:10px;border:1px solid #e2e8f0}
+.casc-title{font-size:13px;font-weight:700;color:#1e3a8a;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.sbar-wrap{height:28px;background:#cbd5e1;border-radius:6px;overflow:hidden;display:flex;margin-bottom:5px}
+.sseg{height:100%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;transition:width .4s ease;white-space:nowrap;overflow:hidden;padding:0 4px}
+.sseg.ac   {background:var(--green-b)}
+.sseg.acc  {background:var(--purple-b)}
+.sseg.cer  {background:var(--blue-b)}
+
+.leg{display:flex;gap:12px;margin-top:4px;font-size:10px;color:var(--muted);flex-wrap:wrap;margin-bottom:12px}
+.leg span{display:flex;align-items:center;gap:4px}
+.leg .dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+
+.flow-row{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.fbadge{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#fff;flex-shrink:0}
+.fbadge.green {background:var(--green-b)}
+.fbadge.blue  {background:var(--blue-b)}
+.fbadge.purple{background:var(--purple-b)}
+.fbadge.amber {background:var(--amber-b)}
+.finfo{flex:1}
+.finfo .fl{font-size:11px;font-weight:700;color:#334155}
+.finfo .fs{font-size:10px;color:var(--muted);margin-top:1px;line-height:1.3}
+.fbar-track{height:10px;background:#f1f5f9;border-radius:4px;overflow:hidden;margin-top:4px}
+.fbar-fill{height:100%;border-radius:4px;transition:width .4s ease}
+.fkwh{min-width:100px;text-align:right}
+.fkwh .fkv{font-size:13px;font-weight:700;color:#334155}
+.fkwh .fkp{font-size:10px;color:var(--muted)}
+.feur{min-width:90px;text-align:right}
+.feur .fev{font-size:13px;font-weight:700}
+.fev.pos{color:var(--green)}
+.fev.neg{color:var(--red)}
+.surplus-note{margin:2px 35px 9px;padding-left:6px;border-left:2px dashed #cbd5e1;font-size:10px;color:var(--muted)}
+.flow-sep{border:none;border-top:1px dashed #e2e8f0;margin:8px 0 10px}
+.flow-section-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px}
+
+/* ══ ECONOMIC TABLE ══ */
+.eco-card{background:var(--card);border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.05);padding:14px 16px;margin-bottom:10px;border:1px solid #e2e8f0}
+.etbl{width:100%;border-collapse:collapse;font-size:12px}
+.etbl th{background:#f8fafc;padding:6px 10px;font-weight:700;color:#475569;border-bottom:2px solid #e2e8f0;text-align:left}
+.etbl td{padding:7px 10px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+.etbl tr:last-child td{border-bottom:none}
+.etbl td.sign{font-size:18px;font-weight:900;width:24px;text-align:center}
+.etbl td.sign.pos{color:var(--green)}
+.etbl td.sign.neg{color:var(--red)}
+.etbl td.num{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.etbl td.num.pos{color:var(--green);font-weight:700}
+.etbl td.num.neg{color:var(--red);font-weight:700}
+.etbl .tr-tot td{font-weight:900;background:#f8fafc;border-top:2px solid #94a3b8;font-size:13px}
+
+/* ══ SALDO BOX ══ */
+.saldo-box{background:var(--card);border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.05);padding:16px;text-align:center;margin-bottom:10px;border:1px solid #e2e8f0}
+.slbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:6px}
+.sval{font-size:46px;font-weight:900;line-height:1;margin-bottom:4px}
+.ssub{font-size:11px;color:var(--muted);max-width:520px;margin:0 auto;line-height:1.4}
+
+/* ══ OPT BOX ══ */
+.opt-box{background:#fffbeb;border-radius:8px;border-left:4px solid #f59e0b;padding:10px 13px;margin-bottom:10px;font-size:11px;color:#78350f;line-height:1.5}
+.opt-title{font-size:11px;font-weight:700;color:var(--amber);margin-bottom:3px;text-transform:uppercase;letter-spacing:.3px}
+
+.field-modified{background:#fff5f5!important;border-color:#fca5a5!important;}
+
+#toast{position:fixed;bottom:20px;right:20px;background:#1e293b;color:#fff;padding:10px 16px;border-radius:8px;font-size:12px;display:none;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,.15)}
+
+@media print {
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  html,body{height:auto!important;overflow:visible!important;background:#fff!important}
+  .layout{display:block!important;height:auto!important;overflow:visible!important;padding:0}
+  .col-left,.col-right{width:100%!important;max-width:100%!important;height:auto!important;overflow:visible!important;padding:0;margin-bottom:20px}
+  .no-print{display:none!important}
+  .card,.cascade,.eco-card,.saldo-box{break-inside:avoid;margin-bottom:15px}
+  .info-hidden{display:revert!important}
+}
+
+/* ══ INFO BUTTON ══ */
+.info-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.35);border-radius:50%;width:27px;height:27px;font-size:17px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;color:inherit;flex-shrink:0;opacity:.55;transition:opacity .15s,background .15s;padding:0;line-height:1;font-weight:normal;}
+.info-btn:hover,.info-btn.active{opacity:1;background:rgba(255,255,255,.4);}
+.info-btn.dark{background:rgba(0,0,0,.08);border-color:rgba(0,0,0,.2);color:#334155;}
+.info-btn.dark:hover,.info-btn.dark.active{background:rgba(0,0,0,.18);}
+.info-hidden{display:none;}
+
+/* ══ EV STEPPER ══ */
+.step-btn{width:26px;height:28px;border:1px solid var(--border);border-radius:5px;background:#e2e8f0;cursor:pointer;font-size:16px;font-weight:700;color:#334155;display:inline-flex;align-items:center;justify-content:center;padding:0;flex-shrink:0;line-height:1;transition:background .12s,color .12s;}
+.step-btn:hover{background:var(--blue-b);color:#fff;border-color:var(--blue-b);}
+.step-btn:active{transform:scale(.92);}
+
+/* ══ TIPO TOGGLE ══ */
+.tipo-btn{border:1px solid var(--border);border-radius:6px;padding:3px 7px;font-size:11px;font-weight:600;cursor:pointer;background:#f1f5f9;color:#334155;transition:background .12s,color .12s;white-space:nowrap;}
+.tipo-btn.active{background:var(--green-b);color:#fff;border-color:var(--green-b);}
+.tipo-btn:hover:not(.active){background:#e2e8f0;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="r21-logo">
+    <div class="r21-pow">powered by</div>
+    <div class="r21-name">RETE<span>21</span></div>
+  </div>
+  <div class="hline"></div>
+  <div>
+    <h1>Bilancio Energetico be30</h1>
+  </div>
+  <div class="cw">
+    <label for="cliente">Cliente</label>
+    <input type="text" id="cliente" placeholder="Nome azienda…" value="">
+  </div>
+  <div class="hbtns">
+    <button class="hbtn imp no-print" onclick="document.getElementById('json-import-input').click()" style="background:#16a34a;color:#fff;border:1px solid #15803d;">⬆ Importa Elettrica AI</button>
+    <button class="hbtn imp gas no-print" onclick="document.getElementById('gas-import-input').click()">🔥 Importa Fossile AI</button>
+    <button class="hbtn json no-print" onclick="exportJSON()">⬇ Esporta JSON</button>
+    <button class="hbtn no-print" onclick="salvaHTML()" style="background:#1d4ed8;color:#fff;border-radius:20px;border:none;">💾 Salva HTML</button>
+    <button class="hbtn no-print" onclick="if(confirm('Azzera tutti i campi e ripristina i valori predefiniti?')) resetAll()" style="background:#ef4444;color:#fff;border-radius:20px;border:none;">🗑 Pulisci totale</button>
+    <button class="hbtn no-print" onclick="if(confirm('Pulisci tutto mantenendo i dati delle bollette (F1/F2/F3 e tariffe)?')) resetExcludeBollette()" style="background:#f97316;color:#fff;border-radius:20px;border:none;">🧹 Pulisci parziale</button>
+    <button class="hbtn print no-print" onclick="window.print()">🖨 Stampa</button>
+  </div>
+</header>
+
+<input type="file" id="json-import-input" accept=".json" style="display:none">
+<input type="file" id="gas-import-input" accept=".json" style="display:none">
+
+<div class="layout">
+
+<div class="col-left">
+
+  <div class="card">
+    <div class="green ch" style="display:flex;align-items:center;justify-content:space-between;"><span>☀ Impianto Fotovoltaico Base</span><button class="info-btn" onclick="toggleInfo(this)" title="Mostra info">ⓘ</button></div>
+    <div class="cb">
+      <div class="ir" style="background:#f0fdf4; padding:6px; border-radius:6px; margin-bottom:8px;">
+        <span class="sym" style="background:#22c55e; color:#fff;">AUTO</span>
+        <label><strong>Sizing Adattivo</strong><br><small class="info-hidden" data-info-display="inline">Sui consumi diurni storici (F1/F2)</small></label>
+        <div class="irv" style="gap:5px;">
+          <button id="btn-lock-base-sizing" onclick="toggleBaseSizingLock()" title="🔒 Auto: kWp calcolato sulla bolletta  |  🔓 Manuale: valore libero" style="border:1px solid #22c55e;border-radius:6px;padding:1px 8px;font-size:14px;cursor:pointer;background:#dcfce7;color:#166534;line-height:1.4;transition:background .12s,border-color .12s,color .12s;">🔒</button>
+          <input type="checkbox" id="auto-size" checked style="display:none;">
+        </div>
+      </div>
+      <div class="info-hidden" data-info-display="block" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:7px;padding:9px 12px;font-size:11px;color:#166534;margin-bottom:8px;line-height:1.6;">
+        🔒 <strong>AUTO — Sizing Adattivo attivo:</strong> la potenza kWp viene calcolata automaticamente per compensare la bolletta elettrica storica (consumi F1/F2 diurni). È il dimensionamento ottimale di riferimento.<br>
+        🔓 <strong>MANUALE — Dimensionamento libero:</strong> puoi impostare un valore personalizzato, superiore <em>o inferiore</em> al consigliato, secondo le esigenze specifiche del cliente (es. superficie tetto limitata, budget, priorità diversa).
+      </div>
+      <div class="ir">
+        <span class="sym">kWp</span>
+        <label>Potenza di base</label>
+        <div class="irv" style="gap:3px;">
+          <button class="step-btn no-print" onclick="stepKwpBase('kwp',-10)">−</button>
+          <input type="number" id="kwp" value="0" min="0" step="10" style="width:52px;text-align:center;">
+          <button class="step-btn no-print" onclick="stepKwpBase('kwp',10)">+</button>
+          <div class="unit">kWp</div>
+        </div>
+      </div>
+      <div class="ir">
+        <span class="sym">Zona</span>
+        <label>Area geografica Italia</label>
+        <div class="irv">
+          <select id="zona-preset" style="width:90px;">
+            <option value="1050" selected>N ~1050</option>
+            <option value="1150">C ~1150</option>
+            <option value="1350">S ~1350</option>
+          </select>
+          <div class="unit"></div>
+        </div>
+      </div>
+      <div class="ir" style="display:none;">
+        <input type="number" id="y-spec" value="1050">
+      </div>
+      <div class="ir">
+        <span class="sym">K ott</span>
+        <label>Coeff. ottimizzazione</label>
+        <div class="irv"><input type="number" id="k-ott" value="0.90" min="0.5" max="1.0" step="0.01"><div class="unit">—</div></div>
+      </div>
+      <div class="info-box-mini info-hidden" data-info-display="flex">
+        Prod. Base stimata: <strong id="r-prod-auto">—</strong>
+        <input type="number" id="prod" value="94500" style="display:none;" readonly>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="blue ch">🏭 Consumi Elettrici Storici</div>
+    <div class="cb">
+      <div class="ir">
+        <span class="sym">Fascia F1</span>
+        <label>Consumo annuo F1</label>
+        <div class="irv"><input type="number" id="e-f1" value="10520" min="0" step="500"><div class="unit">kWh/a</div></div>
+      </div>
+      <div class="ir">
+        <span class="sym">Fascia F2</span>
+        <label>Consumo annuo F2</label>
+        <div class="irv"><input type="number" id="e-f2" value="3493" min="0" step="500"><div class="unit">kWh/a</div></div>
+      </div>
+      <div class="ir">
+        <span class="sym">Fascia F3</span>
+        <label>Consumo annuo F3</label>
+        <div class="irv"><input type="number" id="e-f3" value="6757" min="0" step="500"><div class="unit">kWh/a</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="blue ch" style="display:flex;align-items:center;justify-content:space-between;"><span>🚗 Nuovi Carichi: Flotta EV Aziendale</span><button class="info-btn" onclick="toggleInfo(this)" title="Mostra info">ⓘ</button></div>
+    <div class="cb">
+      <div class="ir">
+        <span class="sym">gg Lav</span>
+        <label>Giorni lavorativi / anno</label>
+        <div class="irv"><input type="number" id="dlav" value="260" min="1" max="365"><div class="unit">giorni</div></div>
+      </div>
+      <div class="ir">
+        <span class="sym">Diurni ☀</span>
+        <label>Mezzi ricarica diurna</label>
+        <div class="irv" style="gap:3px;">
+          <button class="step-btn no-print" onclick="stepEV('ev-day-n',-1)">−</button>
+          <input type="number" id="ev-day-n" value="0" min="0" max="50" style="width:42px;text-align:center;">
+          <button class="step-btn no-print" onclick="stepEV('ev-day-n',1)">+</button>
+          <div class="unit">veicoli</div>
+        </div>
+      </div>
+      <div class="ir">
+        <span class="sym">Tipo ☀</span>
+        <div style="flex:1;display:flex;gap:5px;align-items:center;">
+          <button id="ev-day-tipo-auto"    class="tipo-btn active" onclick="setTipo('ev-day','auto')" style="flex:1;text-align:center;">🚗 Auto</button>
+          <button id="ev-day-tipo-furgone" class="tipo-btn"        onclick="setTipo('ev-day','furgone')" style="flex:1;text-align:center;">🚐 Furgone</button>
+          <select id="ev-day-tipo" style="display:none;"><option value="auto" selected>auto</option><option value="furgone">furgone</option></select>
+        </div>
+        <span class="info-hidden" data-info-display="inline" style="font-size:10px;color:var(--muted);margin-left:4px;">+50%</span>
+      </div>
+      <div class="slider-row">
+        <input type="range" id="ev-day-km" value="20000" min="5000" max="100000" step="5000">
+        <span class="range-val" id="ev-day-km-val">20.000</span>
+        <span style="font-size:10px;color:var(--muted)">km/anno/v</span>
+      </div>
+      <div class="ev-total info-hidden" id="ev-day-info" data-info-display="block">—</div>
+      
+      <div class="ir" style="margin-top:4px;">
+        <span class="sym">Notturni 🌙</span>
+        <label>Mezzi ricarica notturna</label>
+        <div class="irv" style="gap:3px;">
+          <button class="step-btn no-print" onclick="stepEV('ev-night-n',-1)">−</button>
+          <input type="number" id="ev-night-n" value="0" min="0" max="50" style="width:42px;text-align:center;">
+          <button class="step-btn no-print" onclick="stepEV('ev-night-n',1)">+</button>
+          <div class="unit">veicoli</div>
+        </div>
+      </div>
+      <div class="ir">
+        <span class="sym">Tipo 🌙</span>
+        <div style="flex:1;display:flex;gap:5px;align-items:center;">
+          <button id="ev-night-tipo-auto"    class="tipo-btn active" onclick="setTipo('ev-night','auto')" style="flex:1;text-align:center;">🚗 Auto</button>
+          <button id="ev-night-tipo-furgone" class="tipo-btn"        onclick="setTipo('ev-night','furgone')" style="flex:1;text-align:center;">🚐 Furgone</button>
+          <select id="ev-night-tipo" style="display:none;"><option value="auto" selected>auto</option><option value="furgone">furgone</option></select>
+        </div>
+        <span class="info-hidden" data-info-display="inline" style="font-size:10px;color:var(--muted);margin-left:4px;">+50%</span>
+      </div>
+      <div class="slider-row">
+        <input type="range" id="ev-night-km" value="20000" min="5000" max="100000" step="5000">
+        <span class="range-val" id="ev-night-km-val">20.000</span>
+        <span style="font-size:10px;color:var(--muted)">km/anno/v</span>
+      </div>
+      <div class="ev-total info-hidden" id="ev-night-info" data-info-display="block">—</div>
+      <div class="ir" style="margin-top:6px;">
+        <span class="sym">€ Carb.</span>
+        <label>Prezzo carburante alla pompa<br><small class="info-hidden" data-info-display="inline">IVA inclusa (benzina o diesel)</small></label>
+        <div class="irv"><input type="number" id="p-carburante" value="2" min="0" step="0.01"><div class="unit">€/L</div></div>
+      </div>
+      <div class="ir">
+        <span class="sym">L/100km</span>
+        <label>Consumo medio veicoli fossile</label>
+        <div class="irv"><input type="number" id="cons-fossile" value="8" min="1" max="30" step="0.5"><div class="unit">L/100km</div></div>
+      </div>
+      <div class="ir">
+        <span class="sym">kWh/100</span>
+        <label>Consumo medio veicoli EV</label>
+        <div class="irv"><input type="number" id="cons-ev" value="20" min="5" max="60" step="0.5"><div class="unit">kWh/100</div></div>
+      </div>
+      <div class="info-box-mini info-hidden" id="r-fossile-info" style="background:#f0fdf4; border-color:#bbf7d0; flex-direction:column; align-items:flex-start; gap:4px;" data-info-display="flex">
+        <span>Risparmio netto calcolato: <strong id="r-fossile-saving-calc">—</strong> €/kWh</span>
+        <span style="font-size:10px;color:var(--muted)">Flotta: <strong id="r-fleet-km">—</strong></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="blue ch" style="display:flex;align-items:center;justify-content:space-between;"><span>🔥 Nuovi Carichi: Conversione Termica</span><button class="info-btn" onclick="toggleInfo(this)" title="Mostra info">ⓘ</button></div>
+    <div class="cb">
+      <div class="ir" style="background:#eff6ff; padding:6px; border-radius:6px; margin-bottom:8px; border:1px solid #bfdbfe;">
+        <span class="sym" style="background:var(--blue-b); color:#fff;">Sì/No</span>
+        <label><strong>Procedi Conversione Fossile → Elettrico</strong><br><small class="info-hidden" data-info-display="inline">Attiva PdC · sposta Gas Metano → kWh elettrici</small></label>
+        <div style="display:flex;gap:4px;">
+          <button id="pdc-si" onclick="setPdc(true)"  class="tipo-btn"        style="min-width:36px;text-align:center;">Sì</button>
+          <button id="pdc-no" onclick="setPdc(false)" class="tipo-btn active" style="min-width:36px;text-align:center;">No</button>
+          <input type="checkbox" id="pdc-attiva" style="display:none;">
+        </div>
+      </div>
+      <div class="ir">
+        <span class="sym">Gas Met</span>
+        <label>Consumo annuo gas/GPL in Sm³-eq Metano<br><small id="gas-sm3-note" class="info-hidden" style="color:var(--muted)" data-info-display="inline">Importa JSON gas per aggiornare · GPL: mc×PCI÷9,4</small></label>
+        <div class="irv"><input type="number" id="gas-sm3" value="0" min="0" step="100"><div class="unit">Sm3/a</div></div>
+      </div>
+      <div class="ir">
+        <span class="sym">Costo M</span>
+        <label>Costo unitario gas (spesa annua ÷ Sm³-eq)<br><small id="p-gas-note" class="info-hidden" style="color:var(--muted)" data-info-display="inline">Importa JSON gas per aggiornare · include tutte le voci in bolletta</small></label>
+        <div class="irv"><input type="number" id="p-gas" value="1.20" min="0" step="0.05"><div class="unit">€/Sm3</div></div>
+      </div>
+      <div class="ir">
+        <span class="sym">COP PdC</span>
+        <label>Efficienza Pompa di Calore<br><small class="info-hidden" data-info-display="inline">Coefficiente di Performance</small></label>
+        <div class="irv"><input type="number" id="pdc-cop" value="3.6" min="1.5" max="5.5" step="0.1"><div class="unit">—</div></div>
+      </div>
+      <div class="ir" style="background:#f0f9ff; padding:5px 6px; border-radius:6px; margin-bottom:4px; border:1px solid #bae6fd;">
+        <span class="sym" style="background:#0284c7; color:#fff; font-size:10px;">ACS</span>
+        <label style="font-size:11px;">Base ACS giornaliera<br><small class="info-hidden" style="color:var(--muted)" data-info-display="inline">Consumo fisso stimato (ACS + usi generici) non legato al riscaldamento</small></label>
+        <div class="irv"><input type="number" id="gas-base-acs" value="0.3" min="0.05" max="5" step="0.05" style="width:56px;"><div class="unit">Sm³/g</div></div>
+      </div>
+      <div class="info-box-mini info-hidden" id="pdc-new-load-box" data-info-display="flex" style="flex-direction:column; gap:3px; background:#eff6ff; border-color:#bfdbfe; border-style:solid; border-width:1px;">
+        <div style="display:flex; align-items:center; gap:6px;">
+          <span style="font-size:14px;">⚡</span>
+          <span>Nuovo carico elettrico PdC: <strong id="r-pdc-kwh-new">—</strong> kWh/anno</span>
+        </div>
+        <div style="font-size:10px; color:var(--muted); padding-left:20px;">
+          ☀ Diurno F1/F2: <strong id="r-pdc-kwh-diurno">—</strong> kWh &nbsp;·&nbsp; 🌙 Notturno F3: <strong id="r-pdc-kwh-notturno">—</strong> kWh
+        </div>
+        <div style="font-size:10px; color:#1e40af; padding-left:20px; font-weight:700;" id="r-pdc-kwh-note">— kWp aggiuntivi inclusi nel Sizing Adattivo Base</div>
+      </div>
+      <div class="info-box-mini info-hidden" id="gas-calc-trace" data-info-display="block" style="background:#f0f9ff; border:1px solid #7dd3fc; border-radius:6px; padding:6px 8px; font-size:11px; line-height:1.65; color:#0c4a6e;">
+        <em style="color:var(--muted)">Nessun import gas con dati periodo disponibili.</em>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="amber ch" style="display:flex;align-items:center;justify-content:space-between;"><span>🔋 Sistema di Accumulo</span><button class="info-btn" onclick="toggleInfo(this)" title="Mostra info">ⓘ</button></div>
+    <div class="cb">
+
+      <div class="ir" style="background:#fff8e1; padding:6px; border-radius:6px; margin-bottom:8px; border:1px solid #fef3c7;">
+        <span class="sym" style="background:var(--amber-b); color:#fff;">LEVA</span>
+        <label><strong>Dirottamento Accumulo</strong><br><small class="info-hidden" data-info-display="inline">Destinazione d'uso scarica</small></label>
+        <div class="irv">
+          <select id="storage-destination" style="width:110px; font-weight:700; color:var(--amber);">
+            <option value="macchinari" selected>🏭 Macchinari</option>
+            <option value="auto">🚗 Auto Elettr.</option>
+          </select>
+        </div>
+      </div>
+      <div class="ir">
+        <span class="sym">Capacità</span>
+        <label>Capacità batteria utile</label>
+        <div class="irv" style="gap:3px;">
+          <button class="step-btn no-print" onclick="stepKwp('batt-kwh',-10)">−</button>
+          <input type="number" id="batt-kwh" value="" min="0" step="10" style="width:52px;text-align:center;">
+          <button class="step-btn no-print" onclick="stepKwp('batt-kwh',10)">+</button>
+          <div class="unit">kWh</div>
+        </div>
+      </div>
+      <div class="ir">
+        <span class="sym">Cicli max</span>
+        <label>Cicli annui limite stimati</label>
+        <div class="irv"><input type="number" id="cicli" value="300" min="50" max="365"><div class="unit">cicli/a</div></div>
+      </div>
+      <div class="flow-sep" style="margin:6px 0;"></div>
+      <div class="ir">
+        <span class="sym">P Shave</span>
+        <label>Target Peak Shaving</label>
+        <div class="irv"><input type="number" id="ps-kw" value="21" min="0" step="5"><div class="unit">kW</div></div>
+      </div>
+      <div class="ir">
+        <span class="sym">Tariffa P</span>
+        <label>Quota Potenza Mensile MT</label>
+        <div class="irv"><input type="number" id="p-pot-cost" value="4.39" min="0" step="0.01"><div class="unit">€/kW/m</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="gray ch" style="display:flex;align-items:center;justify-content:space-between;"><span>💶 Parametri Economici e Remunerazioni</span><button class="info-btn" onclick="toggleInfo(this)" title="Mostra info">ⓘ</button></div>
+    <div class="cb">
+      <div class="ir">
+        <span class="sym">Costo F1</span>
+        <label>Valore evitato F1</label>
+        <div class="irv"><input type="number" id="p-f1" value="0.155" min="0" step="0.001"><div class="unit">€/kWh</div></div>
+      </div>
+      <div class="ir">
+        <span class="sym">Costo F2</span>
+        <label>Valore evitato F2</label>
+        <div class="irv"><input type="number" id="p-f2-cost" value="0.177" min="0" step="0.001"><div class="unit">€/kWh</div></div>
+      </div>
+      <div class="ir">
+        <span class="sym">Costo F3</span>
+        <label>Costo acquisto rete F3</label>
+        <div class="irv"><input type="number" id="p-f3" value="0.167" min="0" step="0.001"><div class="unit">€/kWh</div></div>
+      </div>
+      <div class="ir">
+        <span class="sym">Tar RID</span>
+        <label>Prezzo Ritiro Dedicato (RID)</label>
+        <div class="irv"><input type="number" id="p-rid" value="0.075" min="0" step="0.001"><div class="unit">€/kWh</div></div>
+      </div>
+      <div class="ir">
+        <span class="sym">Tar CER</span>
+        <label>Tariffa incentivante CER (GSE)<br><small class="info-hidden" data-info-display="inline">Decreto CACER — ridotta -30% in calcolo</small></label>
+        <div class="irv"><input type="number" id="p-cer" value="0.110" min="0" step="0.001"><div class="unit">€/kWh</div></div>
+      </div>
+      <div class="ir">
+        <span class="sym">WB Marg</span>
+        <label>Margine netto Wallbox diurna</label>
+        <div class="irv"><input type="number" id="p-wb" value="0.08" min="0" step="0.01"><div class="unit">€/kWh</div></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div id="col-divider" class="col-divider"></div>
+
+<div class="col-right">
+
+  <div class="card" style="border: 2px solid var(--green-b); background: var(--green-l); border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.05); padding: 14px 16px; margin-bottom: 10px;">
+    <div class="casc-title" style="color: var(--green); font-size:13px; font-weight:700; margin-bottom:12px; display:flex; align-items:center; justify-content:space-between; width:100%;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span style="font-size:16px">🏭</span> Impianto Fotovoltaico Base
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <div style="font-size:11px; background:var(--green); color:#fff; padding:2px 8px; border-radius:5px; font-weight:800;" id="lbl-header-prod-base">—</div>
+        <button class="info-btn dark" onclick="toggleInfo(this)" title="Mostra info">ⓘ</button>
+      </div>
+    </div>
+
+    <div style="margin-bottom:14px">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:4px">
+        Ripartizione Produzione Impianto Base (<span id="lbl-total-fv">—</span> = 100%)
+      </div>
+      <div class="sbar-wrap">
+        <div class="sseg ac"    id="bar1-ac"    style="width:0%">Autoconsumo Diretto</div>
+        <div class="sseg"       id="bar1-rest"  style="width:0%; background:#475569; padding:0;"></div>
+      </div>
+      <div class="leg">
+        <span class="info-hidden" data-info-display="flex"><div class="dot" style="background:var(--green-b)"></div>[A] Autoconsumo Base Industriale</span>
+        <span class="info-hidden" data-info-display="flex"><div class="dot" style="background:#475569"></div>Eccedenza Residua Base (Accumulo Macchinari + RID)</span>
+      </div>
+    </div>
+
+
+
+
+    <span id="r-A-fab" style="display:none"></span>
+    <span id="r-A-fab-pct" style="display:none"></span>
+    <span id="r-val-ac-fab" style="display:none"></span>
+    <span id="r-A-pdc" style="display:none"></span>
+    <span id="r-A-pdc-pct" style="display:none"></span>
+    <span id="r-val-ac-pdc" style="display:none"></span>
+  </div>
+
+  <div class="card" style="border: 2px solid var(--blue-b); background: var(--blue-l); border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.05); padding: 14px 16px; margin-bottom: 10px;">
+    <div class="casc-title" style="color:var(--blue); font-size:13px; font-weight:700; margin-bottom:12px; display:flex; align-items:center; justify-content:space-between; width:100%;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span style="font-size:16px">🚗</span> Impianto fotovoltaico integrativo
+      </div>
+      <div style="display:flex; gap:6px; text-transform:none; align-items:center;">
+        <span id="lbl-new-loads-kwh" style="display:none;">—</span>
+        <span style="font-size:11px; background:var(--green); color:#fff; padding:2px 8px; border-radius:5px; font-weight:800; white-space:nowrap;" id="lbl-parallel-pv-kwp">—</span>
+        <button id="btn-lock-ev-sizing" onclick="toggleEvSizingLock()" title="Blocca/sblocca Sizing Adattivo EV" style="border:1px solid #22c55e;border-radius:6px;padding:1px 6px;font-size:14px;cursor:pointer;background:#dcfce7;color:#166534;line-height:1.4;transition:background .12s,border-color .12s,color .12s;">🔓</button>
+        <button class="info-btn dark" onclick="toggleInfo(this)" title="Mostra info">ⓘ</button>
+      </div>
+    </div>
+    
+
+    <input type="number" id="kwp-integrativo" value="0" min="0" step="5" style="display:none;">
+
+    <div class="info-hidden" data-info-display="block" style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:7px;padding:9px 12px;font-size:11px;color:#1e40af;margin-bottom:10px;line-height:1.6;">
+      📦 <strong>Fabbisogno totale flotta EV:</strong> <span id="lbl-new-loads-kwh-info">—</span><br>
+      🔒 <strong>Pulsante di blocco Sizing Adattivo:</strong> attivarlo quando si è esaurita la superficie disponibile per l'installazione. La potenza proposta è la somma di Impianto FV Base + Impianto FV Integrativo, che in questo momento è pari a: <strong id="lbl-kwp-totale">—</strong>
+    </div>
+
+    <div style="margin-bottom:14px">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--green);margin-bottom:4px">
+        3. ORIGINE ENERGIA IN RICARICA DIURNA<span id="lbl-ev-day-tot-box" style="display:none"></span>
+      </div>
+      <div class="sbar-wrap" style="background:#cbd5e1;">
+        <div class="sseg ac" id="bar3-ev-day-sole" style="width:0%">Sole: 0%</div>
+        <div class="sseg acc" id="bar3-ev-day-storage" style="width:0%">Accumulo: 0%</div>
+        <div class="sseg" id="bar3-ev-day-rete" style="width:0%; background:#94a3b8; color:#fff;">Rete: 0%</div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:6px">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--green);margin-bottom:4px">
+        4. ORIGINE ENERGIA IN RICARICA NOTTURNA<span id="lbl-ev-night-tot-box" style="display:none"></span>
+      </div>
+      <div class="sbar-wrap" style="background:#cbd5e1;">
+        <div class="sseg ac" id="bar4-ev-night-sole" style="width:0%">Sole: 0%</div>
+        <div class="sseg ac"  id="bar4-ev-night-storage" style="width:0%">Provenienza Accumulo: 0%</div>
+        <div class="sseg" id="bar4-ev-night-rete" style="width:0%; background:#475569; color:#fff;">Provenienza Rete: 0%</div>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="eco-card">
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--gray);margin-bottom:10px;letter-spacing:.3px;display:flex;align-items:center;justify-content:space-between;">
+      <span>📊 Valori Economici Annuali</span>
+      <button class="info-btn dark" onclick="toggleInfo(this)" title="Mostra info">ⓘ</button>
+    </div>
+    <table class="etbl">
+      <thead>
+        <tr>
+          <th width="24"></th>
+          <th>Voce di Beneficio Inbound</th>
+          <th>Logica di Sostenibilità</th>
+          <th class="num">Quantità</th>
+          <th class="num">Prezzo Unitario</th>
+          <th class="num">Beneficio €/anno</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="sign pos">+</td>
+          <td><strong>Risparmio Autoconsumo Diretto</strong></td>
+          <td style="color:var(--muted)">Eradicazione carichi industriali diurni (F1/F2)</td>
+          <td class="num" id="et-A-fab-kwh">—</td>
+          <td class="num" id="et-A-fab-rate">—</td>
+          <td class="num pos" id="et-A-fab-eur">—</td>
+        </tr>
+        <tr style="background:#f0fdf4;">
+          <td class="sign pos">+</td>
+          <td><strong>Mancato Acquisto Carburante Fossile</strong></td>
+          <td style="color:var(--muted)">Costo carburante flotta sostituita</td>
+          <td class="num" id="et-A-ev-kwh">—</td>
+          <td class="num" id="et-A-ev-rate">—</td>
+          <td class="num pos" id="et-A-ev-foss-eur">—</td>
+        </tr>
+        <tr style="background:#fef2f2;">
+          <td class="sign" style="color:#dc2626;">−</td>
+          <td><strong>Costo Acquisto Energia in Rete</strong></td>
+          <td style="color:var(--muted)">Energia prelevata da rete per ricaricare la flotta</td>
+          <td class="num" id="et-A-ev-rete-kwh">—</td>
+          <td class="num" id="et-A-ev-rete-rate">—</td>
+          <td class="num" style="color:#dc2626; font-weight:700;" id="et-A-ev-rete-eur">—</td>
+        </tr>
+        <tr class="info-hidden" data-info-display="table-row" style="background:#fefce8; border-top:1px dashed #fde68a;">
+          <td class="sign" style="color:var(--amber-b); font-size:15px;">≈</td>
+          <td><strong style="color:var(--amber)">Costo Acquisto Totale Energia Elettrica (IVA esclusa)</strong></td>
+          <td style="color:var(--muted)">Fabbrica + flotta da rete a tariffa ponderata (non in somma)</td>
+          <td class="num" id="et-ee-totale-kwh">—</td>
+          <td class="num" id="et-ee-totale-rate">—</td>
+          <td class="num" style="color:var(--amber); font-weight:700;" id="et-ee-totale-eur">—</td>
+        </tr>
+        <tr class="info-hidden" data-info-display="table-row" style="background:#f8fafc; border-bottom: 2px solid #e2e8f0;">
+          <td class="sign" style="color:var(--blue-b); font-size:16px;">ℹ</td>
+          <td><strong style="color:var(--blue)">Di cui: Valore Energia FV Propria (Info)</strong></td>
+          <td style="color:var(--muted)">Quota solare usata (il beneficio è già nel minor acquisto da rete)</td>
+          <td class="num" id="et-A-ev-fv-kwh">—</td>
+          <td class="num" id="et-A-ev-fv-rate">—</td>
+          <td class="num" style="color:var(--blue); font-weight:700;" id="et-A-ev-fv-eur">—</td>
+        </tr>
+        <tr>
+          <td class="sign pos">+</td>
+          <td><strong>Risparmio Tagliandi e Manutenzione EV</strong></td>
+          <td style="color:var(--muted)">Stima risparmio annuo su tagliandi (vs. termico)</td>
+          <td class="num">—</td>
+          <td class="num">forfait</td>
+          <td class="num pos" id="et-A-ev-tagliandi">—</td>
+        </tr>
+        <tr>
+          <td class="sign pos">+</td>
+          <td><strong>Risparmio da Conversione Termica a elettrica</strong></td>
+          <td style="color:var(--muted)">Mancato acquisto gas metano caldaia dismessa</td>
+          <td class="num" id="et-A-pdc-kwh">—</td>
+          <td class="num" id="et-A-pdc-rate">—</td>
+          <td class="num pos" id="et-A-pdc-eur">—</td>
+        </tr>
+        <tr>
+          <td class="sign pos">+</td>
+          <td><strong>Risparmio Utilizzo Accumulo Notturno [C]</strong></td>
+          <td style="color:var(--muted)">Quota di scarica destinata a Fabbrica o EV</td>
+          <td class="num" id="et-C-kwh">—</td>
+          <td class="num" id="et-C-rate">—</td>
+          <td class="num pos" id="et-C-eur">—</td>
+        </tr>
+        <tr>
+          <td class="sign pos">+</td>
+          <td><strong>Ricavo da Margine Commerciale Wallbox</strong></td>
+          <td style="color:var(--muted)">A_ev × P_WB — markup reale su ricarica solare diurna</td>
+          <td class="num" id="et-wb-kwh">—</td>
+          <td class="num" id="et-wb-rate">—</td>
+          <td class="num pos" id="et-wb-eur">—</td>
+        </tr>
+        <tr id="row-ps">
+          <td class="sign pos">+</td>
+          <td><strong>Taglio Quota Potenza (Peak Shaving)</strong></td>
+          <td style="color:var(--muted)">Abbattimento picchi contrattuali mensili in MT</td>
+          <td class="num" id="et-ps-kw">—</td>
+          <td class="num" id="et-ps-rate">—</td>
+          <td class="num pos" id="et-ps-eur">—</td>
+        </tr>
+        <tr>
+          <td class="sign pos">+</td>
+          <td><strong>Ricavi da Ritiro Dedicato (RID)</strong></td>
+          <td style="color:var(--muted)">Esubero liquido complessivo immesso in rete</td>
+          <td class="num" id="et-rid-kwh">—</td>
+          <td class="num" id="et-rid-rate">—</td>
+          <td class="num pos" id="et-rid-eur">—</td>
+        </tr>
+        <tr style="background:#fefce8; border-top:2px dashed #fde68a;">
+          <td class="sign" style="color:var(--amber-b); font-size:16px;">≈</td>
+          <td><strong style="color:var(--amber)">Stima Ricavi CER (non in somma)</strong></td>
+          <td style="color:var(--muted)">Energia condivisa valorizzata a tariffa GSE CACER · prudenziale −30%</td>
+          <td class="num" id="et-cer-kwh">—</td>
+          <td class="num" id="et-cer-rate">—</td>
+          <td class="num" style="color:var(--amber); font-weight:700;" id="et-cer-eur">—</td>
+        </tr>
+        <tr class="tr-tot">
+          <td class="sign" id="saldo-sign">+</td>
+          <td colspan="4">TOTALE VALORE POSITIVO DEL NUOVO FLUSSO GENERATO</td>
+          <td class="num" style="font-size:15px; color:var(--green);" id="et-saldo">—</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="saldo-box">
+    <div style="display:flex;align-items:center;justify-content:flex-end;margin-bottom:2px;"><button class="info-btn dark" onclick="toggleInfo(this)" title="Mostra info" style="opacity:.5;">ⓘ</button></div>
+    <div class="slbl info-hidden" data-info-display="block">Flusso Finanziario Annuo Attivo Rigenerato</div>
+    <div class="sval" id="r-saldo">—</div>
+    <div class="ssub info-hidden" id="r-saldo-sub" data-info-display="block">—</div>
+  </div>
+
+
+</div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+function n(id) {
+  var el = document.getElementById(id);
+  return el && !isNaN(parseFloat(el.value)) ? parseFloat(el.value) : 0;
+}
+function fmt(v, dec) {
+  if (dec === undefined) dec = 0;
+  if (isNaN(v) || !isFinite(v)) return '0';
+  return v.toLocaleString('it-IT', {minimumFractionDigits: dec, maximumFractionDigits: dec});
+}
+function fmtE(v) { return fmt(v, 0) + ' €'; }
+function set(id, val) {
+  var el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+function setW(id, p) {
+  var el = document.getElementById(id);
+  if (el) el.style.width = Math.min(Math.max(p, 0), 100) + '%';
+}
+function setVal(id, val) {
+  var el = document.getElementById(id);
+  if (el && val !== undefined && val !== null) el.value = val;
+}
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.style.display = 'block';
+  t.style.opacity = '1';
+  clearTimeout(t._tid);
+  t._tid = setTimeout(function() {
+    t.style.opacity = '0';
+    setTimeout(function() { t.style.display = 'none'; }, 300);
+  }, 2800);
+}
+
+function checkAdaptiveSizing() {
+  var autoSizeOn = document.getElementById('auto-size').checked;
+  var kwpField = document.getElementById('kwp');
+  
+  if (autoSizeOn) {
+    kwpField.readOnly = true;
+    kwpField.style.background = '#e2e8f0';
+    kwpField.style.color = '#64748b';
+    
+    var e_f1 = n('e-f1');
+    var e_f2 = n('e-f2');
+    var y_spec = n('y-spec');
+    var k_ott = n('k-ott');
+
+    // FIX be11.2: il flag PdC deve incidere sulla potenza FV base.
+    // Si somma l'intero nuovo carico elettrico annuo della PdC, non solo la quota diurna.
+    // Con il caso Tesser: OFF ≈ 12 kWp, ON ≈ 13 kWp.
+    var pdc_attiva_check = document.getElementById('pdc-attiva').checked;
+    var gas_sm3_check = n('gas-sm3');
+    var pdc_cop_check = Math.max(n('pdc-cop'), 1);
+    var kwh_pdc_sizing = pdc_attiva_check && gas_sm3_check > 0 ? ((gas_sm3_check * 9.4) / pdc_cop_check) : 0;
+
+    var diurn_baseline_no_pdc = e_f1 + (e_f2 * 0.7);
+    var diurn_baseline = diurn_baseline_no_pdc + kwh_pdc_sizing;
+    var recommended_kwp = 0;
+    if (y_spec > 0 && k_ott > 0) {
+      // Arrotondamento per eccesso: ogni nuovo carico attivo deve generare potenza FV consigliata visibile.
+      recommended_kwp = Math.ceil((diurn_baseline / (y_spec * k_ott)) * 0.85);
+    }
+    recommended_kwp = Math.max(recommended_kwp, 10);
+    setVal('kwp', recommended_kwp);
+  } else {
+    kwpField.readOnly = false;
+    kwpField.style.background = '#f8fafc';
+    kwpField.style.color = '#1e293b';
+  }
+}
+
+function checkAdaptiveSizingEV() {
+  var autoSizeEvOn = !evSizingLocked;
+  var kwpIntField = document.getElementById('kwp-integrativo');
+  
+  if (autoSizeEvOn) {
+    kwpIntField.readOnly = true;
+    kwpIntField.style.background = '#e2e8f0';
+    kwpIntField.style.color = '#64748b';
+    
+    var ev_day_n    = n('ev-day-n');
+    var ev_night_n  = n('ev-night-n');
+    var ev_day_km   = n('ev-day-km');
+    var ev_night_km = n('ev-night-km');
+    var _consEv_sz   = n('cons-ev') || 20;
+    var _dayT_sz     = document.getElementById('ev-day-tipo')   ? document.getElementById('ev-day-tipo').value   : 'auto';
+    var _nightT_sz   = document.getElementById('ev-night-tipo') ? document.getElementById('ev-night-tipo').value : 'auto';
+    var ev_day   = ev_day_n   * (ev_day_km   / 100) * (_dayT_sz   === 'furgone' ? _consEv_sz * 1.5 : _consEv_sz);
+    var ev_night = ev_night_n * (ev_night_km / 100) * (_nightT_sz === 'furgone' ? _consEv_sz * 1.5 : _consEv_sz);
+
+    // *** be12 fix: la ricarica notturna può essere coperta dal FV integrativo
+    // SOLO se leva = "auto" E batteria utile > 0 (il sole carica la batteria
+    // di giorno, che scarica sugli EV di notte). Senza batteria il sole non c'è di notte.
+    var storage_dest_ev = document.getElementById('storage-destination').value;
+    var batt_ev = n('batt-kwh');
+    var ev_night_sizing = (storage_dest_ev === 'auto' && batt_ev > 0) ? ev_night : 0;
+    var total_ev_load = ev_day + ev_night_sizing;
+
+    var y_spec = n('y-spec');
+    var k_ott = n('k-ott');
+
+    var recommended_ev_kwp = 0;
+    if (y_spec > 0 && k_ott > 0) {
+      recommended_ev_kwp = Math.round((total_ev_load / (y_spec * k_ott)) * 10) / 10;
+    }
+    setVal('kwp-integrativo', recommended_ev_kwp);
+  } else {
+    kwpIntField.readOnly = false;
+    kwpIntField.style.background = '#fff';
+    kwpIntField.style.color = '#1e293b';
+  }
+}
+
+function updateProdFromKwp() {
+  checkAdaptiveSizing();
+  checkAdaptiveSizingEV();
+  var kwp_base = n('kwp');
+  var y     = n('y-spec');
+  var k     = n('k-ott');
+  var prod  = Math.round(kwp_base * y * k);
+  var el    = document.getElementById('prod');
+  if (el) el.value = prod;
+  set('r-prod-auto', fmt(prod) + ' kWh/anno');
+}
+
+function syncSliders() {
+  var dayKm    = n('ev-day-km');
+  var nightKm  = n('ev-night-km');
+  var dayN     = n('ev-day-n');
+  var nightN   = n('ev-night-n');
+  var consEv   = n('cons-ev') || 20;
+  var dayTipo   = document.getElementById('ev-day-tipo')   ? document.getElementById('ev-day-tipo').value   : 'auto';
+  var nightTipo = document.getElementById('ev-night-tipo') ? document.getElementById('ev-night-tipo').value : 'auto';
+  var consEvDay   = dayTipo   === 'furgone' ? consEv * 1.5 : consEv;
+  var consEvNight = nightTipo === 'furgone' ? consEv * 1.5 : consEv;
+
+  set('ev-day-km-val',   fmt(dayKm));
+  set('ev-night-km-val', fmt(nightKm));
+
+  var kwhVDay   = Math.round((dayKm   / 100) * consEvDay);
+  var kwhVNight = Math.round((nightKm / 100) * consEvNight);
+  var evDayTot   = dayN   * kwhVDay;
+  var evNightTot = nightN * kwhVNight;
+
+  set('ev-day-info',   dayN   > 0 ? fmt(kwhVDay)   + ' kWh/v · tot. ' + fmt(evDayTot)   + ' kWh/anno' : '—');
+  set('ev-night-info', nightN > 0 ? fmt(kwhVNight) + ' kWh/v · tot. ' + fmt(evNightTot) + ' kWh/anno' : '—');
+}
+
+function calc() {
+  checkAdaptiveSizing();
+  checkAdaptiveSizingEV();
+
+  // *** FIX be11: prod_base calcolato direttamente da kwp live ***
+  // Non legge più il campo nascosto 'prod' che potrebbe essere stale.
+  // checkAdaptiveSizing() ha appena aggiornato 'kwp', lo leggiamo subito.
+  var kwp_base_live = n('kwp');
+  var y_live = n('y-spec');
+  var k_live = n('k-ott');
+  var prod_base = Math.round(kwp_base_live * y_live * k_live);
+  // Aggiorna anche il campo nascosto per coerenza con updateProdFromKwp
+  (function(){ var el = document.getElementById('prod'); if(el) el.value = prod_base; })();
+
+  var kwp_int   = n('kwp-integrativo');
+  var y_spec    = n('y-spec');
+  var k_ott     = n('k-ott');
+  
+  var prod_int  = Math.round(kwp_int * y_spec * k_ott);
+
+  var e_f1     = n('e-f1');
+  var e_f2     = n('e-f2');
+  var e_f3     = n('e-f3');
+  var dlav     = n('dlav');
+  
+  var ev_day_n    = n('ev-day-n');
+  var ev_night_n  = n('ev-night-n');
+  var ev_day_km   = n('ev-day-km');
+  var ev_night_km = n('ev-night-km');
+  // *** be13: consumo basato su km/anno e tipo veicolo (auto / furgone +50%) ***
+  var p_carb      = n('p-carburante');
+  var cons_foss   = n('cons-fossile') || 8;
+  var cons_ev_100 = n('cons-ev') || 20;
+  var ev_day_tipo   = document.getElementById('ev-day-tipo')   ? document.getElementById('ev-day-tipo').value   : 'auto';
+  var ev_night_tipo = document.getElementById('ev-night-tipo') ? document.getElementById('ev-night-tipo').value : 'auto';
+  var cons_ev_day_c   = ev_day_tipo   === 'furgone' ? cons_ev_100 * 1.5 : cons_ev_100;
+  var cons_ev_night_c = ev_night_tipo === 'furgone' ? cons_ev_100 * 1.5 : cons_ev_100;
+  var cons_foss_day_c   = ev_day_tipo   === 'furgone' ? cons_foss * 1.5 : cons_foss;
+  var cons_foss_night_c = ev_night_tipo === 'furgone' ? cons_foss * 1.5 : cons_foss;
+
+  var ev_day   = ev_day_n   * (ev_day_km   / 100) * cons_ev_day_c;
+  var ev_night = ev_night_n * (ev_night_km / 100) * cons_ev_night_c;
+  var tot_km_flotta = ev_day_n * ev_day_km + ev_night_n * ev_night_km;
+
+  // Risparmio netto: costo fossile stessi km - costo elettricità rete
+  var fossil_cost_tot = (ev_day_n   * ev_day_km   / 100) * cons_foss_day_c   * p_carb
+                      + (ev_night_n * ev_night_km / 100) * cons_foss_night_c * p_carb;
+  // Costo medio rete ponderato su consumi storici
+  var tot_kwh_stor = Math.max(n('e-f1') + n('e-f2') + n('e-f3'), 1);
+  var p_grid_avg   = (n('p-f1') * n('e-f1') + n('p-f2-cost') * n('e-f2') + n('p-f3') * n('e-f3')) / tot_kwh_stor;
+  var tot_ev_kwh_fleet = ev_day + ev_night;
+  var p_fossile_saving = tot_ev_kwh_fleet > 0
+    ? Math.max((fossil_cost_tot - tot_ev_kwh_fleet * p_grid_avg) / tot_ev_kwh_fleet, 0) : 0;
+  // Aggiorna display
+  set('r-fossile-saving-calc', fmt(p_fossile_saving, 3));
+  set('r-fleet-km', fmt(tot_km_flotta) + ' km/a · ' + fmt(Math.round(tot_ev_kwh_fleet)) + ' kWh/a');
+
+  var pdc_attiva = document.getElementById('pdc-attiva').checked;
+  var gas_sm3  = n('gas-sm3');
+  var p_gas    = n('p-gas');
+  var pdc_cop  = Math.max(n('pdc-cop'), 1);
+  
+  var batt_kwh = n('batt-kwh');
+  var cicli    = n('cicli');
+  var ps_kw    = n('ps-kw');
+  var p_pot_cost = n('p-pot-cost');
+  var storage_dest = document.getElementById('storage-destination').value;
+  
+  var p_f1     = n('p-f1');
+  var p_f2     = n('p-f2-cost');
+  var p_f3     = n('p-f3');
+  var p_rid    = n('p-rid');
+  var p_wb     = n('p-wb');
+  var p_cer    = n('p-cer');
+
+  var dlav_safe = Math.max(dlav, 1);
+  var giorni_festivi = Math.max(365 - dlav_safe, 1);
+
+  var kwh_elettrici_pdc_tot = pdc_attiva ? ((gas_sm3 * 9.4) / pdc_cop) : 0;
+  var pdc_diurno_tot = kwh_elettrici_pdc_tot * 0.40;
+  var pdc_notturno_tot = kwh_elettrici_pdc_tot * 0.60;
+  var cost_gas_storico = pdc_attiva ? (gas_sm3 * p_gas) : 0;
+
+  // Aggiorna box carico elettrico PdC
+  // Aggiorna valori pdc-new-load-box (display gestito da info-btn "I")
+  if (pdc_attiva && kwh_elettrici_pdc_tot > 0) {
+    set('r-pdc-kwh-new', fmt(Math.round(kwh_elettrici_pdc_tot)));
+    set('r-pdc-kwh-diurno', fmt(Math.round(pdc_diurno_tot)));
+    set('r-pdc-kwh-notturno', fmt(Math.round(pdc_notturno_tot)));
+    var y_spec_pdc = n('y-spec'); var k_ott_pdc = n('k-ott');
+    var kwp_pdc_extra = 0;
+    if (y_spec_pdc > 0 && k_ott_pdc > 0) {
+      var base_no_pdc = n('e-f1') + (n('e-f2') * 0.7);
+      var kwp_no_pdc = Math.max(Math.ceil((base_no_pdc / (y_spec_pdc * k_ott_pdc)) * 0.85), 10);
+      var kwp_with_pdc = Math.max(Math.ceil(((base_no_pdc + kwh_elettrici_pdc_tot) / (y_spec_pdc * k_ott_pdc)) * 0.85), 10);
+      kwp_pdc_extra = Math.max(kwp_with_pdc - kwp_no_pdc, 0);
+    }
+    set('r-pdc-kwh-note', '+' + kwp_pdc_extra + ' kWp effettivi nel Sizing Adattivo Base con PdC ON');
+  }
+
+  var c_diur_fab_lav = (e_f1 + (e_f2 * 0.7)) / dlav_safe;
+  var c_diur_pdc_lav = pdc_diurno_tot / dlav_safe;
+  var c_diur_ev_lav  = ev_day / dlav_safe;
+  var c_diur_fest_base = (e_f2 * 0.3) / giorni_festivi + (pdc_diurno_tot / giorni_festivi);
+
+  var prod_base_g = prod_base / 365;
+  var prod_int_g  = prod_int / 365;
+
+  // ════ FLUSSO 1: IMPIANTO BASE ════
+  var A_fab_lav_g = Math.min(prod_base_g, c_diur_fab_lav);
+  var surplus_base_1 = Math.max(prod_base_g - A_fab_lav_g, 0);
+  
+  var A_pdc_lav_g = Math.min(surplus_base_1, c_diur_pdc_lav);
+  var surplus_base_2 = Math.max(surplus_base_1 - A_pdc_lav_g, 0);
+
+  var batt_chg_lav_g = (storage_dest === 'macchinari') ? Math.min(surplus_base_2, batt_kwh) : 0;
+  var rid_base_feriale_g = surplus_base_2 - batt_chg_lav_g;
+
+  // Festivi Base
+  var A_fab_fest_g = Math.min(prod_base_g, c_diur_fest_base);
+  var surplus_fest_base = Math.max(prod_base_g - A_fab_fest_g, 0);
+  var batt_chg_fest_base_g = (storage_dest === 'macchinari') ? Math.min(surplus_fest_base, batt_kwh) : 0;
+  var rid_base_festivo_g = surplus_fest_base - batt_chg_fest_base_g;
+
+  // Totali Base
+  var A_fab_annuo = (A_fab_lav_g * dlav_safe) + (A_fab_fest_g * giorni_festivi); 
+  var A_pdc_annuo = A_pdc_lav_g * dlav_safe;
+  var A_diretto_base_tot = A_fab_annuo + A_pdc_annuo;
+  
+  var batt_cap_ann = batt_kwh * cicli;
+  var C_base_caricato = Math.min(((batt_chg_lav_g * dlav_safe) + (batt_chg_fest_base_g * giorni_festivi)), batt_cap_ann);
+  var C_night_fab = (storage_dest === 'macchinari') ? Math.min(C_base_caricato, e_f3 + pdc_notturno_tot) : 0;
+  var D_rid_base = Math.max(prod_base - A_diretto_base_tot - C_night_fab, 0);
+
+  // ════ FLUSSO 2: IMPIANTO INTEGRATIVO INDIPENDENTE EV ════
+  var A_ev_int_g = Math.min(prod_int_g, c_diur_ev_lav);
+  var surplus_int_g = Math.max(prod_int_g - A_ev_int_g, 0);
+  
+  var batt_chg_int_g = (storage_dest === 'auto') ? Math.min(surplus_int_g, batt_kwh) : 0;
+  var rid_int_feriale_g = surplus_int_g - batt_chg_int_g;
+
+  var batt_chg_fest_int_g = (storage_dest === 'auto') ? Math.min(prod_int_g, batt_kwh) : 0;
+  var rid_int_festivo_g = prod_int_g - batt_chg_fest_int_g;
+
+  var A_ev_solare_annuo = A_ev_int_g * dlav_safe;
+  var C_int_caricato = Math.min(((batt_chg_int_g * dlav_safe) + (batt_chg_fest_int_g * giorni_festivi)), batt_cap_ann);
+  var C_night_ev = (storage_dest === 'auto') ? Math.min(C_int_caricato, ev_night) : 0;
+  var D_rid_int = Math.max(prod_int - A_ev_solare_annuo - C_night_ev, 0);
+
+  var D_rid_totale = D_rid_base + D_rid_int;
+  var C_night_visualizzata = (storage_dest === 'auto') ? C_night_ev : C_night_fab;
+
+  var EV_quota_sole_totale = A_ev_solare_annuo + C_night_ev;
+  var EV_quota_rete_totale = Math.max((ev_day + ev_night) - EV_quota_sole_totale, 0);
+
+  var E_diurno_ev = Math.max(ev_day - A_ev_solare_annuo, 0);
+  var E_notturno_ev = Math.max(ev_night - C_night_ev, 0);
+
+  // VALORIZZAZIONE ECONOMICA VALORE ATTIVO RIGENERATO
+  var A_f1 = Math.min(A_fab_annuo, e_f1);
+  var A_f2 = Math.min(Math.max(A_fab_annuo - A_f1, 0), e_f2);
+  var val_ac_fabbrica = (A_f1 * p_f1) + (A_f2 * p_f2);
+  var rate_ac_fabbrica_pesato = val_ac_fabbrica / (A_fab_annuo || 1);
+
+  // Costo fossile salvato (km × cons × p_carb)
+  var val_fossile_saved = fossil_cost_tot;
+  // Costo energia rete per ricaricare EV (kWh da rete × tariffa ponderata)
+  var val_rete_per_ev   = EV_quota_rete_totale * p_grid_avg;
+  // Totale acquisto EE da rete (fabbrica + EV, IVA esclusa)
+  var kwh_fab_da_rete        = Math.max(0, tot_kwh_stor - A_fab_annuo);
+  var kwh_acquisto_ee_totale = kwh_fab_da_rete + EV_quota_rete_totale;
+  var val_acquisto_ee_totale = kwh_acquisto_ee_totale * p_grid_avg;
+  // Valore energia FV propria usata per EV (solare diretta + accumulo, valorizzata a costo rete evitato)
+  var kwh_fv_per_ev     = A_ev_solare_annuo + C_night_ev;
+  var val_fv_per_ev     = A_ev_solare_annuo * p_f1 + C_night_ev * p_f3;
+  // Risparmio netto EV = fossile salvato − costo rete + valore FV propria
+  // be15: risparmio netto EV = fossile salvato - costo rete.
+  // val_fv_per_ev NON entra nella somma: il beneficio solare e' gia'
+  // implicito nel minore val_rete_per_ev. Rimane per esposizione visiva.
+  var val_ac_ev_tot     = val_fossile_saved - val_rete_per_ev;
+  var val_tagliandi_ev  = (ev_day_n + ev_night_n) > 0 ? 400 * (ev_day_n + ev_night_n) : 0;
+
+  var quota_pdc_solare_frazione = kwh_elettrici_pdc_tot > 0 ? (A_pdc_annuo / kwh_elettrici_pdc_tot) : 0;
+  var val_ac_pdc = cost_gas_storico * quota_pdc_solare_frazione;
+
+  var val_acc = C_night_visualizzata * p_f3;
+  // be15: quando leva=AUTO il beneficio accumulo e' gia' nel flusso EV
+  var val_acc_da_sommare = (storage_dest === 'macchinari') ? val_acc : 0;
+  var val_wb = A_ev_solare_annuo * p_wb;
+  
+  var ps_avail_fraction = batt_kwh > 0 ? Math.min(1, Math.max(0, (batt_cap_ann - C_night_visualizzata) / batt_cap_ann)) : 0;
+  var val_ps = ps_kw * p_pot_cost * 12 * ps_avail_fraction * 0.70;
+  var val_rid = D_rid_totale * p_rid;
+  var val_cer = D_rid_totale * p_cer * 0.70; // prudenziale -30%, non in somma
+
+  var saldo_opex_attivo = val_ac_fabbrica + val_ac_ev_tot + val_tagliandi_ev + val_ac_pdc + val_acc_da_sommare + val_wb + val_ps + val_rid;
+
+  var nuovi_carichi_totali_annui = ev_day + ev_night;
+  var y_spec_calc = n('y-spec');
+  var k_ott_calc = n('k-ott');
+  var parallel_pv_richiesto = 0;
+  if (y_spec_calc > 0 && k_ott_calc > 0) {
+    parallel_pv_richiesto = Math.round((nuovi_carichi_totali_annui / (y_spec_calc * k_ott_calc)) * 10) / 10;
+  }
+
+  // 🛠️ BUG REFUSO RISOLTO: Sostituita D_totale errata con D_rid_totale
+  set('lbl-header-prod-base', 'Consigliato: ' + fmt(n('kwp')) + ' kWp');
+  set('lbl-new-loads-kwh', fmt(nuovi_carichi_totali_annui) + ' kWh/a');
+  set('lbl-new-loads-kwh-info', fmt(nuovi_carichi_totali_annui) + ' kWh/anno');
+  set('lbl-parallel-pv-kwp', evSizingLocked
+    ? '🔒 FV integrativo: ' + fmt(n('kwp-integrativo'), 1) + ' kWp'
+    : 'Potenza FV integrativo: ' + fmt(parallel_pv_richiesto, 1) + ' kWp');
+  set('lbl-kwp-totale', fmt(n('kwp') + n('kwp-integrativo'), 1) + ' kWp (Base: ' + fmt(n('kwp'),1) + ' + Integrativo: ' + fmt(n('kwp-integrativo'),1) + ')');
+
+  set('r-A-fab', fmt(A_fab_annuo));
+  set('r-A-ev', fmt(ev_day + ev_night)); 
+  set('r-A-pdc', fmt(A_pdc_annuo));
+  set('r-C-night', fmt(C_night_visualizzata));
+  set('r-D', fmt(D_rid_totale));
+
+  set('r-A-fab-pct', prod_base > 0 ? fmt((A_fab_annuo/prod_base)*100, 1) + '%' : '0%');
+  set('r-A-ev-pct', prod_int > 0 ? fmt((EV_quota_sole_totale/prod_int)*100, 1) + '%' : '0%');
+  set('r-A-pdc-pct', prod_base > 0 ? fmt((A_pdc_annuo/prod_base)*100, 1) + '%' : '0%');
+  set('r-C-pct', batt_cap_ann > 0 ? fmt((C_night_visualizzata/batt_cap_ann)*100, 1) + '%' : '0%');
+  set('r-D-pct', (prod_base + prod_int) > 0 ? fmt((D_rid_totale/(prod_base + prod_int))*100, 1) + '%' : '0%');
+
+  set('r-val-ac-fab', fmtE(val_ac_fabbrica));
+  set('r-val-ac-ev', fmtE(val_ac_ev_tot));
+  set('r-val-ac-pdc', fmtE(val_ac_pdc));
+  set('r-val-acc', fmtE(val_acc));
+  set('r-val-rid', fmtE(val_rid));
+
+  set('lbl-storage-lever-desc', storage_dest === 'macchinari' ? 'Leva posizionata su MACCHINARI: Scarica serale prioritaria a favore dello stabilimento industriale.' : 'Leva posizionata su AUTO ELETTRICHE: Scarica vincolata e dedicata alla flotta veicoli.');
+  document.getElementById('lbl-ev-split-desc') && (document.getElementById('lbl-ev-split-desc').innerHTML = 'Caricate da Sole Integrativo ☀️: <strong>' + fmt(EV_quota_sole_totale) + ' kWh</strong> | Alimentate da Rete 🔌: <strong>' + fmt(EV_quota_rete_totale) + ' kWh</strong>');
+
+  // AGGIORNAMENTO GRAFICI BARRA PROPORZIONALI BASE
+  if(prod_base > 0) {
+    var pct_diretto_base = (A_diretto_base_tot / prod_base) * 100;
+    var pct_rest_base = 100 - pct_diretto_base;
+
+    setW('bar1-ac', pct_diretto_base);
+    set('bar1-ac', pct_diretto_base > 5 ? 'Autoconsumo: ' + fmt(pct_diretto_base, 1) + '%' : '');
+
+    setW('bar1-rest', pct_rest_base);
+    var bar1rest = document.getElementById('bar1-rest');
+    if (bar1rest) {
+      bar1rest.style.padding = pct_rest_base > 5 ? '0 4px' : '0';
+      bar1rest.style.color = '#fff';
+      bar1rest.style.fontSize = '10px';
+      bar1rest.style.fontWeight = '800';
+      bar1rest.textContent = pct_rest_base > 5 ? 'Eccedenza: ' + fmt(pct_rest_base, 1) + '%' : '';
+    }
+
+
+    set('lbl-total-fv', fmt(prod_base) + ' kWh');
+  }
+
+  var ev_day_safe = Math.max(ev_day, 1);
+  var ev_night_safe = Math.max(ev_night, 1);
+
+  var p_day_sole = (A_ev_solare_annuo / ev_day_safe) * 100;
+  var p_day_rete = (E_diurno_ev / ev_day_safe) * 100;
+  
+  setW('bar3-ev-day-sole', p_day_sole);
+  set('bar3-ev-day-sole', ev_day > 0 && p_day_sole > 0 ? 'Sole: ' + fmt(p_day_sole, 1) + '%' : '');
+  setW('bar3-ev-day-storage', 0);
+  set('bar3-ev-day-storage', '');
+  setW('bar3-ev-day-rete', p_day_rete);
+  set('bar3-ev-day-rete', ev_day > 0 && p_day_rete > 0 ? 'Rete: ' + fmt(p_day_rete, 1) + '%' : '');
+
+  var p_night_storage = (C_night_ev / ev_night_safe) * 100;
+  var p_night_rete = (E_notturno_ev / ev_night_safe) * 100;
+
+  setW('bar4-ev-night-sole', 0);
+  set('bar4-ev-night-sole', '');
+
+  if (storage_dest === 'auto' && batt_kwh > 0) {
+    setW('bar4-ev-night-storage', p_night_storage);
+    set('bar4-ev-night-storage', ev_night > 0 && p_night_storage > 0 ? 'Provenienza Accumulo: ' + fmt(p_night_storage, 1) + '%' : '');
+  } else {
+    setW('bar4-ev-night-storage', 0);
+    set('bar4-ev-night-storage', '');
+    p_night_rete = ev_night > 0 ? 100 : 0;
+  }
+  setW('bar4-ev-night-rete', p_night_rete);
+  set('bar4-ev-night-rete', ev_night > 0 && p_night_rete > 0 ? 'Provenienza Rete: ' + fmt(p_night_rete, 1) + '%' : '');
+
+  // Riempimento Tabella Economica
+  set('et-A-fab-kwh', fmt(A_fab_annuo) + ' kWh');
+  set('et-A-fab-rate', fmt(rate_ac_fabbrica_pesato, 3) + ' €');
+  set('et-A-fab-eur', fmtE(val_ac_fabbrica));
+  // 1. Riga Mancato acquisto fossile (+)
+  set('et-A-ev-kwh', fmt(tot_km_flotta) + ' km');
+  set('et-A-ev-rate', fmt(n('p-carburante'), 2) + ' €/L');
+  set('et-A-ev-foss-eur', fmtE(val_fossile_saved));
+  // 2. Riga Costo Rete (−)
+  set('et-A-ev-rete-kwh', fmt(Math.round(EV_quota_rete_totale)) + ' kWh');
+  set('et-A-ev-rete-rate', fmt(p_grid_avg, 3) + ' €/kWh');
+  set('et-A-ev-rete-eur', val_rete_per_ev > 0 ? '− ' + fmtE(val_rete_per_ev) : '0 €');
+  // Riga costo totale EE (info-hidden)
+  set('et-ee-totale-kwh',  fmt(Math.round(kwh_acquisto_ee_totale)) + ' kWh');
+  set('et-ee-totale-rate', fmt(p_grid_avg, 3) + ' €/kWh');
+  set('et-ee-totale-eur',  kwh_acquisto_ee_totale > 0 ? '≈ ' + fmtE(val_acquisto_ee_totale) : '0 €');
+  // 3. Riga Valore FV propria (Info - non sommata al totale)
+  set('et-A-ev-fv-kwh', fmt(Math.round(kwh_fv_per_ev)) + ' kWh FV');
+  set('et-A-ev-fv-rate', fmt((kwh_fv_per_ev > 0 ? val_fv_per_ev / kwh_fv_per_ev : 0), 3) + ' €/kWh');
+  set('et-A-ev-fv-eur', fmtE(val_fv_per_ev));
+  // Tagliandi
+  set('et-A-ev-tagliandi', (ev_day_n + ev_night_n) > 0 ? fmtE(val_tagliandi_ev) : '—');
+  set('et-A-pdc-kwh', fmt(gas_sm3) + ' Sm³');
+  set('et-A-pdc-rate', fmt(p_gas, 2) + ' €/Sm³');
+  set('et-A-pdc-eur', fmtE(val_ac_pdc));
+  // be15: quando leva=AUTO mostra 0 per coerenza con il totale
+  set('et-C-kwh', storage_dest === 'auto' ? '—' : fmt(C_night_visualizzata) + ' kWh');
+  set('et-C-rate', storage_dest === 'auto' ? 'incl. in EV' : fmt(p_f3, 3) + ' €');
+  set('et-C-eur', fmtE(val_acc_da_sommare));
+  set('et-wb-kwh', fmt(A_ev_solare_annuo) + ' kWh solare');
+  set('et-wb-rate', fmt(p_wb, 3) + ' €');
+  set('et-wb-eur', fmtE(val_wb));
+  set('et-ps-kw', fmt(ps_kw) + ' kW picco');
+  set('et-ps-rate', fmt(p_pot_cost, 2) + ' €/kW');
+  set('et-ps-eur', fmtE(val_ps));
+  var rowPs = document.getElementById('row-ps');
+  if (rowPs) rowPs.style.display = ps_kw > 0 ? '' : 'none';
+  set('et-rid-kwh', fmt(D_rid_totale) + ' kWh surplus');
+  set('et-rid-rate', fmt(p_rid, 3) + ' €');
+  set('et-rid-eur', fmtE(val_rid));
+  set('et-cer-kwh', fmt(D_rid_totale) + ' kWh condivisi');
+  set('et-cer-rate', fmt(p_cer, 3) + ' €/kWh (−30%)');
+  set('et-cer-eur', '≈ ' + fmtE(val_cer));
+  set('et-saldo', fmtE(saldo_opex_attivo));
+
+  var saldo_el = document.getElementById('r-saldo');
+  if (saldo_el) {
+    saldo_el.textContent = '+' + fmtE(saldo_opex_attivo);
+    saldo_el.style.color = '#166534';
+  }
+  var sub_el = document.getElementById('r-saldo-sub');
+  if (sub_el) {
+    sub_el.textContent = 'VALORE FINANZIARIO RIGENERATO: Rappresenta la sommatoria totale dei benefici diurni, notturni e sostitutivi reali generati dall\'assetto solare combinato.';
+  }
+
+}
+
+function exportJSON() {
+  var cliente = document.getElementById('cliente') ? document.getElementById('cliente').value : 'Cliente';
+  var data = {
+    cliente: cliente,
+    schema: 'Bilancio Energetico be30',
+    inputs: {
+      kwp: n('kwp'), kwp_integrativo: n('kwp-integrativo'), y_spec: n('y-spec'), k_ott: n('k-ott'),
+      e_f1: n('e-f1'), e_f2: n('e-f2'), e_f3: n('e-f3'),
+      dlav: n('dlav'),
+      ev_day_n: n('ev-day-n'), ev_day_km: n('ev-day-km'), ev_day_tipo: document.getElementById('ev-day-tipo') ? document.getElementById('ev-day-tipo').value : 'auto',
+      ev_night_n: n('ev-night-n'), ev_night_km: n('ev-night-km'), ev_night_tipo: document.getElementById('ev-night-tipo') ? document.getElementById('ev-night-tipo').value : 'auto',
+      p_carburante: n('p-carburante'), cons_fossile: n('cons-fossile'), cons_ev: n('cons-ev'),
+      gas_sm3: n('gas-sm3'), p_gas: n('p-gas'), pdc_cop: n('pdc-cop'), pdc_attiva: document.getElementById('pdc-attiva').checked,
+      batt_kwh: n('batt-kwh'), cicli: n('cicli'), ps_kw: n('ps-kw'), p_pot_cost: n('p-pot-cost'), storage_destination: document.getElementById('storage-destination').value,
+      p_f1: n('p-f1'), p_f2_cost: n('p-f2-cost'), p_f3: n('p-f3'), p_rid: n('p-rid'), p_wb: n('p-wb'), p_cer: n('p-cer'),
+      auto_size: document.getElementById('auto-size').checked
+    }
+  };
+  var blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+  var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  // Nome file dinamico: estrae "beXX" dallo schema, aggiunge cliente + data + ora
+  var schemaStr = data.schema || '';
+  var beVersion = (schemaStr.match(/be\d+/i) || ['be30'])[0].toLowerCase();
+  var clienteNorm = (data.cliente || 'Cliente').replace(/\s+/g, '_');
+  var now = new Date();
+  var gg = String(now.getDate()).padStart(2, '0');
+  var mm = String(now.getMonth() + 1).padStart(2, '0');
+  var aaaa = now.getFullYear();
+  var hh = String(now.getHours()).padStart(2, '0');
+  var min = String(now.getMinutes()).padStart(2, '0');
+  var nomeFile = 'BilancioEnergetico_' + beVersion + '_' + clienteNorm + '_' + gg + '-' + mm + '-' + aaaa + '_' + hh + min + '.json';
+  a.download = nomeFile; a.click();
+}
+
+
+function salvaHTML() {
+  var cliente = document.getElementById('cliente') ? document.getElementById('cliente').value : 'Cliente';
+  // Estrae "beXX" dal titolo della pagina (es. "Bilancio Energetico be16")
+  var titleText = document.title || '';
+  var beVersion = (titleText.match(/be\d+/i) || ['be30'])[0].toLowerCase();
+  var clienteNorm = cliente.replace(/\s+/g, '_');
+  var now = new Date();
+  var gg = String(now.getDate()).padStart(2, '0');
+  var mm = String(now.getMonth() + 1).padStart(2, '0');
+  var aaaa = now.getFullYear();
+  var hh = String(now.getHours()).padStart(2, '0');
+  var min = String(now.getMinutes()).padStart(2, '0');
+  var nomeFile = 'BilancioEnergetico_' + beVersion + '_' + clienteNorm + '_' + gg + '-' + mm + '-' + aaaa + '_' + hh + min + '.html';
+  var html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+  var blob = new Blob([html], {type: 'text/html'});
+  var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = nomeFile; a.click();
+}
+
+function normalizeImportedValue(value) {
+  if (value === undefined || value === null) return undefined;
+  if (typeof value === 'string') {
+    var trimmed = value.trim();
+    if (trimmed === '') return '';
+    var normalized = trimmed.replace(',', '.');
+    if (!isNaN(parseFloat(normalized)) && isFinite(normalized)) return parseFloat(normalized);
+    return value;
+  }
+  return value;
+}
+
+function applyImportedInputs(inp, options) {
+  options = options || {};
+  inp = inp || {};
+
+  var map = {
+    kwp: 'kwp',
+    kwp_integrativo: 'kwp-integrativo',
+    y_spec: 'y-spec',
+    k_ott: 'k-ott',
+    e_f1: 'e-f1',
+    e_f2: 'e-f2',
+    e_f3: 'e-f3',
+    dlav: 'dlav',
+    ev_day_n: 'ev-day-n',
+    ev_day_km: 'ev-day-km',
+    ev_night_n: 'ev-night-n',
+    ev_night_km: 'ev-night-km',
+    p_carburante: 'p-carburante',
+    cons_fossile: 'cons-fossile',
+    cons_ev: 'cons-ev',
+    gas_sm3: 'gas-sm3',
+    p_gas: 'p-gas',
+    pdc_cop: 'pdc-cop',
+    batt_kwh: 'batt-kwh',
+    cicli: 'cicli',
+    ps_kw: 'ps-kw',
+    p_pot_cost: 'p-pot-cost',
+    p_f1: 'p-f1',
+    p_f2_cost: 'p-f2-cost',
+    p_f3: 'p-f3',
+    p_rid: 'p-rid',
+    p_wb: 'p-wb',
+    p_cer: 'p-cer'
+  };
+
+  Object.keys(map).forEach(function(key) {
+    if (inp[key] !== undefined) setVal(map[key], normalizeImportedValue(inp[key]));
+  });
+
+  // Compatibilita con JSON che usano gia gli ID HTML oppure varianti frequenti.
+  var aliases = {
+    'kwp-integrativo': 'kwp-integrativo',
+    'y-spec': 'y-spec',
+    'k-ott': 'k-ott',
+    'e-f1': 'e-f1',
+    'e-f2': 'e-f2',
+    'e-f3': 'e-f3',
+    'ev-day-n': 'ev-day-n',
+    'ev-day-km': 'ev-day-km',
+    'ev-night-n': 'ev-night-n',
+    'ev-night-km': 'ev-night-km',
+    'p-carburante': 'p-carburante',
+    'cons-fossile': 'cons-fossile',
+    'cons-ev': 'cons-ev',
+    'gas-sm3': 'gas-sm3',
+    'p-gas': 'p-gas',
+    'pdc-cop': 'pdc-cop',
+    'batt-kwh': 'batt-kwh',
+    'ps-kw': 'ps-kw',
+    'p-pot-cost': 'p-pot-cost',
+    'p-f1': 'p-f1',
+    'p-f2-cost': 'p-f2-cost',
+    'p-f3': 'p-f3',
+    'p-rid': 'p-rid',
+    'p-wb': 'p-wb',
+    'p-cer': 'p-cer'
+  };
+  Object.keys(aliases).forEach(function(key) {
+    if (inp[key] !== undefined) setVal(aliases[key], normalizeImportedValue(inp[key]));
+  });
+
+  if (inp.auto_size !== undefined) document.getElementById('auto-size').checked = !!inp.auto_size;
+  syncLockBtns();
+  if (inp.pdc_attiva !== undefined) document.getElementById('pdc-attiva').checked = !!inp.pdc_attiva;
+  syncPdcBtns();
+  if (inp.storage_destination !== undefined) setVal('storage-destination', inp.storage_destination);
+  if (inp.ev_day_tipo  !== undefined && document.getElementById('ev-day-tipo'))  document.getElementById('ev-day-tipo').value  = inp.ev_day_tipo;
+  if (inp.ev_night_tipo !== undefined && document.getElementById('ev-night-tipo')) document.getElementById('ev-night-tipo').value = inp.ev_night_tipo;
+  // Salva i valori importati come riferimento per rimuovere il fondino al ripristino
+  if (!window._refVals) window._refVals = {};
+  ['e-f1','e-f2','e-f3','dlav','ev-day-n','ev-night-n','gas-sm3'].forEach(function(id){
+    var el = document.getElementById(id);
+    if (el) window._refVals[id] = el.value;
+  });
+
+  // Se il JSON contiene kwp ma anche auto_size=true, il valore base viene ricalcolato.
+  // Se auto_size=false, il valore importato resta manuale.
+  syncTipoBtns();
+  updateProdFromKwp();
+  syncSliders();
+  calc();
+}
+
+function handleImportFile(evt, mode) {
+  var file = evt.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var data = JSON.parse(e.target.result);
+      if (data.cliente) setVal('cliente', data.cliente);
+      var inp = data.inputs || data.inputs_termici || data.inputs_estratti_da_bolletta || data;
+      applyImportedInputs(inp, {mode: mode});
+
+      // Mostra note_estrazione nella label dei campi gas se presenti
+      if (mode === 'gas' && data.note_estrazione) {
+        var ne = data.note_estrazione;
+        var gasNote = document.getElementById('gas-sm3-note');
+        var pgasNote = document.getElementById('p-gas-note');
+        if (gasNote && ne.fonte) gasNote.textContent = '📄 ' + ne.fonte;
+        if (pgasNote && ne.conversione_gpl && ne.conversione_gpl.spiegazione)
+          pgasNote.textContent = ne.conversione_gpl.spiegazione;
+      }
+      // ── DESTAGIONALIZZAZIONE GAS ──────────────────────────────────────────
+      if (mode === 'gas') {
+        // Import fossile: il pill Sì/No deve restare su No (scelta utente, non del JSON)
+        var _pdcCb = document.getElementById('pdc-attiva');
+        if (_pdcCb) { _pdcCb.checked = false; _pdcCb.dispatchEvent(new Event('change')); }
+        syncPdcBtns();
+        var baseAcsGg = parseFloat(document.getElementById('gas-base-acs').value) || 0.3;
+        var gasResult = calcolaGasDestagionalizzato(data, baseAcsGg);
+        if (gasResult) {
+          var estivo_operativo = false;
+          if (gasResult.alert_estivo) {
+            estivo_operativo = confirm(
+              '\u26a0\ufe0f La bolletta include luglio o agosto.\n\n' +
+              'L\'azienda era operativa in quel periodo?\n\n' +
+              'OK \u2192 S\u00ec, periodo operativo\n' +
+              'Annulla \u2192 No, chiusura estiva (gi\u00e0 gestito)'
+            );
+            gasResult.trace.estivo_operativo = estivo_operativo;
+          }
+          // Override con il valore destagionalizzato
+          setVal('gas-sm3', gasResult.gas_sm3_annuo);
+          if (gasResult.p_gas) setVal('p-gas', gasResult.p_gas);
+          aggiornaGasTracePanel(gasResult.trace, gasResult.alert_estivo, estivo_operativo);
+          showToast('✅ Import gas · proiezione destagionalizzata: ' + gasResult.gas_sm3_annuo + ' Sm³/a');
+        } else {
+          // Nessun dato periodo → reset trace e usa valore JSON direttamente
+          var traceEl = document.getElementById('gas-calc-trace');
+          if (traceEl) traceEl.innerHTML = '<em style="color:var(--muted)">Import diretto: il JSON non contiene dati grezzi del periodo — valore sm3 usato senza destagionalizzazione.</em>';
+          showToast('✅ Import gas/PdC completato');
+        }
+      }
+      if (mode === 'elettrico' && data.note_estrazione) {
+        var ne2 = data.note_estrazione;
+        showToast('✅ Import elettrico · ' + (ne2.fonte || 'completato'));
+      } else if (mode !== 'gas') {
+        showToast('✅ Import elettrico completato');
+      }
+    } catch (err) {
+      console.error(err);
+      showToast('Errore import JSON: ' + err.message);
+    }
+    evt.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+document.getElementById('json-import-input').addEventListener('change', function(evt) {
+  handleImportFile(evt, 'elettrico');
+});
+
+document.getElementById('gas-import-input').addEventListener('change', function(evt) {
+  handleImportFile(evt, 'gas');
+});
+
+
+function resetAll() {
+  document.getElementById('cliente').value = '';
+  var defs = {
+    'kwp':'0','zona-preset':'1050','y-spec':'1050','k-ott':'0.90',
+    'e-f1':'0','e-f2':'0','e-f3':'0',
+    'dlav':'260','ev-day-n':'0','ev-night-n':'0',
+    'p-carburante':'2','cons-fossile':'8','cons-ev':'20',
+    'gas-sm3':'0','p-gas':'1.20','pdc-cop':'3.6','gas-base-acs':'0.3',
+    'batt-kwh':'','cicli':'300','ps-kw':'0','p-pot-cost':'4.39',
+    'p-f1':'0.155','p-f2-cost':'0.177','p-f3':'0.167',
+    'p-rid':'0.075','p-cer':'0.110','p-wb':'0.08'
+  };
+  Object.keys(defs).forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.value = defs[id];
+  });
+  var autoEl = document.getElementById('auto-size');
+  autoEl.checked = false;
+  autoEl.dispatchEvent(new Event('change'));
+  var pdcEl2 = document.getElementById('pdc-attiva');
+  pdcEl2.checked = false;
+  pdcEl2.dispatchEvent(new Event('change'));
+  syncPdcBtns();
+  document.getElementById('storage-destination').value = 'macchinari';
+  document.getElementById('ev-day-km').value = 20000;
+  document.getElementById('ev-day-km-val').textContent = '20.000';
+  document.getElementById('ev-night-km').value = 20000;
+  document.getElementById('ev-night-km-val').textContent = '20.000';
+  if (document.getElementById('ev-day-tipo'))   document.getElementById('ev-day-tipo').value   = 'auto';
+  if (document.getElementById('ev-night-tipo')) document.getElementById('ev-night-tipo').value = 'auto';
+  syncTipoBtns();
+  ['e-f1','e-f2','e-f3','dlav','ev-day-n','ev-night-n','gas-sm3','kwp'].forEach(function(id){
+    var el = document.getElementById(id); if (el) el.classList.remove('field-modified');
+  });
+  window._refVals = {};
+  closeAllInfo();
+  var _traceEl = document.getElementById('gas-calc-trace');
+  if (_traceEl) _traceEl.innerHTML = '<em style="color:var(--muted)">Nessun import gas con dati periodo disponibili.</em>';
+  updateProdFromKwp(); syncSliders(); calc();
+}
+
+function resetExcludeBollette() {
+  var defs = {
+    'kwp':'0','zona-preset':'1050','y-spec':'1050','k-ott':'0.90',
+    'dlav':'260','ev-day-n':'0','ev-night-n':'0',
+    'p-carburante':'2','cons-fossile':'8','cons-ev':'20',
+    'p-gas':'1.20','pdc-cop':'3.6',
+    'batt-kwh':'','cicli':'300','p-pot-cost':'4.39',
+    'p-rid':'0.075','p-cer':'0.110','p-wb':'0.08'
+  };
+  Object.keys(defs).forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.value = defs[id];
+  });
+  document.getElementById('auto-size').checked = true;
+  var pdcEl = document.getElementById('pdc-attiva');
+  pdcEl.checked = false;
+  pdcEl.dispatchEvent(new Event('change'));
+  syncPdcBtns();
+  document.getElementById('storage-destination').value = 'macchinari';
+  document.getElementById('ev-day-km').value = 20000;
+  document.getElementById('ev-day-km-val').textContent = '20.000';
+  document.getElementById('ev-night-km').value = 20000;
+  document.getElementById('ev-night-km-val').textContent = '20.000';
+  if (document.getElementById('ev-day-tipo'))   document.getElementById('ev-day-tipo').value   = 'auto';
+  if (document.getElementById('ev-night-tipo')) document.getElementById('ev-night-tipo').value = 'auto';
+  syncTipoBtns();
+  ['e-f1','e-f2','e-f3','dlav','ev-day-n','ev-night-n','gas-sm3','kwp'].forEach(function(id){
+    var el = document.getElementById(id); if (el) el.classList.remove('field-modified');
+  });
+  window._refVals = {};
+  closeAllInfo();
+  updateProdFromKwp(); syncSliders(); calc();
+}
+
+function bindLiveEvents() {
+  var ids = [
+    'kwp','kwp-integrativo','y-spec','k-ott','e-f1','e-f2','e-f3','dlav',
+    'ev-day-n','ev-day-km','ev-night-n','ev-night-km','p-carburante','cons-fossile','cons-ev',
+    'gas-sm3','p-gas','pdc-cop','batt-kwh','cicli','ps-kw','p-pot-cost',
+    'p-f1','p-f2-cost','p-f3','p-rid','p-wb','p-cer',
+    'auto-size','pdc-attiva','storage-destination','zona-preset','ev-day-tipo','ev-night-tipo'
+  ];
+
+  // Valori di default per confronto (usati se non c'è stato import)
+  var _fieldDefaults = {'e-f1':'0','e-f2':'0','e-f3':'0','dlav':'260','ev-day-n':'0','ev-night-n':'0','gas-sm3':'0'};
+  var _modIds = ['e-f1','e-f2','e-f3','dlav','ev-day-n','ev-night-n','gas-sm3'];
+
+  function _checkModified(id, el) {
+    var ref = (window._refVals && window._refVals[id] !== undefined)
+      ? window._refVals[id]
+      : (_fieldDefaults[id] !== undefined ? _fieldDefaults[id] : null);
+    if (ref !== null && parseFloat(el.value) === parseFloat(ref)) {
+      el.classList.remove('field-modified');
+    } else {
+      el.classList.add('field-modified');
+    }
+  }
+
+  ids.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    var evtName = (el.type === 'checkbox' || el.tagName === 'SELECT') ? 'change' : 'input';
+    el.addEventListener(evtName, function() {
+      if (id === 'zona-preset') setVal('y-spec', el.value);
+      if (_modIds.indexOf(id) !== -1) _checkModified(id, el);
+      // kwp: fondino rosa solo se sizing adattivo è OFF
+      if (id === 'kwp' && !document.getElementById('auto-size').checked) _checkModified('kwp', el);
+      updateProdFromKwp();
+      syncSliders();
+      calc();
+    });
+  });
+}
+
+function initDivider() {
+  var divider = document.getElementById('col-divider');
+  var left = document.querySelector('.col-left');
+  if (!divider || !left) return;
+  var dragging = false;
+
+  divider.addEventListener('mousedown', function(e) {
+    dragging = true;
+    divider.classList.add('drg');
+    document.body.style.userSelect = 'none';
+    e.preventDefault();
+  });
+  window.addEventListener('mousemove', function(e) {
+    if (!dragging) return;
+    var layout = document.querySelector('.layout');
+    var rect = layout.getBoundingClientRect();
+    var w = e.clientX - rect.left - 12;
+    w = Math.max(480, Math.min(780, w));
+    left.style.width = w + 'px';
+  });
+  window.addEventListener('mouseup', function() {
+    dragging = false;
+    divider.classList.remove('drg');
+    document.body.style.userSelect = '';
+  });
+}
+
+
+function stepEV(id, delta) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  var v = parseInt(el.value) || 0;
+  v = Math.max(0, Math.min(50, v + delta));
+  el.value = v;
+  el.dispatchEvent(new Event('input'));
+}
+function stepKwpBase(id, delta) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  var v = parseFloat(el.value) || 0;
+  var mn = parseFloat(el.min) || 0;
+  v = Math.round((v + delta) / 10) * 10;
+  v = Math.max(mn, v);
+  el.value = v;
+  el.dispatchEvent(new Event('input'));
+}
+
+function stepKwp(id, delta) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  var v = parseFloat(el.value) || 0;
+  var mn = parseFloat(el.min) || 0;
+  v = Math.max(mn, v + delta);
+  el.value = v;
+  el.dispatchEvent(new Event('input'));
+}
+
+function setTipo(prefix, val) {
+  var sel = document.getElementById(prefix + '-tipo');
+  if (sel) sel.value = val;
+  ['auto','furgone'].forEach(function(v) {
+    var btn = document.getElementById(prefix + '-tipo-' + v);
+    if (btn) btn.classList.toggle('active', v === val);
+  });
+  updateProdFromKwp();
+  syncSliders();
+  calc();
+}
+
+function syncTipoBtns() {
+  ['ev-day','ev-night'].forEach(function(prefix) {
+    var sel = document.getElementById(prefix + '-tipo');
+    var val = sel ? sel.value : 'auto';
+    ['auto','furgone'].forEach(function(v) {
+      var btn = document.getElementById(prefix + '-tipo-' + v);
+      if (btn) btn.classList.toggle('active', v === val);
+    });
+  });
+}
+
+function toggleBaseSizingLock() {
+  var cb = document.getElementById('auto-size');
+  if (!cb) return;
+  cb.checked = !cb.checked;
+  cb.dispatchEvent(new Event('change'));
+  syncLockBtns();
+}
+
+function syncLockBtns() {
+  var autoSizeCb = document.getElementById('auto-size');
+  var btnBase = document.getElementById('btn-lock-base-sizing');
+  if (autoSizeCb && btnBase) {
+    var isAuto = autoSizeCb.checked;
+    btnBase.textContent = isAuto ? '🔒' : '🔓';
+    btnBase.style.background = isAuto ? '#dcfce7' : '#fef3c7';
+    btnBase.style.borderColor = isAuto ? '#22c55e' : '#f59e0b';
+    btnBase.style.color = isAuto ? '#166534' : '#92400e';
+  }
+}
+
+var evSizingLocked = false;
+
+function toggleEvSizingLock() {
+  evSizingLocked = !evSizingLocked;
+  var btn = document.getElementById('btn-lock-ev-sizing');
+  if (btn) {
+    btn.textContent = evSizingLocked ? '🔒' : '🔓';
+    btn.style.background = evSizingLocked ? '#fee2e2' : '#dcfce7';
+    btn.style.borderColor = evSizingLocked ? '#ef4444' : '#22c55e';
+    btn.style.color = evSizingLocked ? '#b91c1c' : '#166534';
+  }
+  updateProdFromKwp(); syncSliders(); calc();
+}
+
+// ── GAS DESTAGIONALIZZAZIONE ─────────────────────────────────────────────────
+function countWeekdays(startDate, endDate) {
+  var count = 0;
+  var d = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+  var e = new Date(endDate.getFullYear(),   endDate.getMonth(),   endDate.getDate());
+  while (d <= e) {
+    var day = d.getDay();
+    if (day !== 0 && day !== 6) count++;
+    d.setDate(d.getDate() + 1);
+  }
+  return count;
+}
+
+function getMonthsInRange(startDate, endDate) {
+  var months = [];
+  var d = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
+  while (d <= endDate) {
+    var m = d.getMonth() + 1;
+    if (months.indexOf(m) < 0) months.push(m);
+    d.setMonth(d.getMonth() + 1);
+  }
+  return months;
+}
+
+function calcolaGasDestagionalizzato(data, baseAcsGg) {
+  var inp = data.inputs || data.inputs_termici || data.inputs_estratti_da_bolletta || data;
+  var ne  = data.note_estrazione || {};
+
+  // Dati periodo dalla bolletta
+  var periodo   = ne.periodo || {};
+  var da_str    = periodo.da  || inp.data_inizio || null;
+  var a_str     = periodo.a   || inp.data_fine   || null;
+  var gg_cal    = (typeof periodo.giorni === 'number') ? periodo.giorni : null;
+
+  // Consumi grezzi del periodo (non proiettati)
+  var sm3_periodo = parseFloat(inp.sm3_periodo || inp.consumo_periodo_sm3 || 0) || null;
+  var p_gas_raw   = parseFloat(inp.p_gas || inp.costo_unitario || 0) || null;
+
+  // Se mancano i dati grezzi del periodo → impossibile destagionalizzare
+  if (!sm3_periodo) return null;
+
+  // Dati Gradi Giorno
+  var gg_info   = ne.gradi_giorno || {};
+  var gg_anno   = parseFloat(gg_info.gg_anno)   || 2600;
+  var gg_per    = parseFloat(gg_info.gg_periodo) || null;
+  var gg_pct    = parseFloat(gg_info.quota_pct)  || null;
+  var zona_cl   = gg_info.zona || ne.zona_climatica || '—';
+  var fonte     = ne.fonte || '—';
+
+  // Giorni lavorativi dall'interfaccia
+  var dlav = parseFloat(document.getElementById('dlav').value) || 260;
+
+  // 1. Giorni operativi reali nel periodo (Lun–Ven effettivi)
+  var gg_operativi, alert_estivo = false, da = null, a = null;
+  if (da_str && a_str) {
+    da = new Date(da_str);
+    a  = new Date(a_str);
+    if (!gg_cal) gg_cal = Math.round((a - da) / 86400000) + 1;
+    gg_operativi = countWeekdays(da, a);
+    var mesi = getMonthsInRange(da, a);
+    if (mesi.indexOf(7) >= 0 || mesi.indexOf(8) >= 0) alert_estivo = true;
+  } else if (gg_cal) {
+    // Stima proporzionale se non ho le date precise
+    gg_operativi = Math.round(gg_cal * dlav / 365);
+  } else {
+    return null;
+  }
+
+  // 2. Separazione carichi
+  var base_acs    = baseAcsGg * gg_operativi;
+  var risc_periodo = Math.max(sm3_periodo - base_acs, 0);
+
+  // 3. Destagionalizzazione riscaldamento con GG
+  var risc_annuo, gg_quota_usata = gg_pct;
+  if (!gg_quota_usata && gg_per && gg_anno > 0) {
+    gg_quota_usata = Math.round((gg_per / gg_anno) * 100);
+  }
+  if (gg_quota_usata && gg_quota_usata > 0) {
+    risc_annuo = risc_periodo / (gg_quota_usata / 100);
+  } else {
+    // Fallback: proiezione lineare sul periodo
+    risc_annuo = gg_cal > 0 ? risc_periodo * (365 / gg_cal) : risc_periodo * 3;
+  }
+
+  // 4. Base annua lavorativa
+  var base_annuo    = baseAcsGg * dlav;
+  var gas_sm3_annuo = Math.round(risc_annuo + base_annuo);
+
+  return {
+    gas_sm3_annuo: gas_sm3_annuo,
+    p_gas: p_gas_raw,
+    alert_estivo: alert_estivo,
+    trace: {
+      fonte: fonte, da_str: da_str, a_str: a_str, gg_cal: gg_cal,
+      gg_operativi: gg_operativi, dlav: dlav, sm3_periodo: sm3_periodo,
+      baseAcsGg: baseAcsGg, base_acs: base_acs, risc_periodo: risc_periodo,
+      gg_quota_usata: gg_quota_usata, gg_anno: gg_anno, gg_per: gg_per,
+      zona_cl: zona_cl, risc_annuo: risc_annuo, base_annuo: base_annuo,
+      gas_sm3_annuo: gas_sm3_annuo
+    }
+  };
+}
+
+function aggiornaGasTracePanel(trace, hasAlert, estivo_operativo) {
+  var el = document.getElementById('gas-calc-trace');
+  if (!el) return;
+  var fl = (trace.dlav / 365).toFixed(3);
+  var html = '<strong style="font-size:12px;">📊 Logica Destagionalizzazione Gas</strong><br>';
+  if (trace.fonte && trace.fonte !== '—') html += '<span style="color:#0369a1;">📄 ' + trace.fonte + '</span><br>';
+  if (trace.da_str) html += '📅 Periodo: ' + trace.da_str + ' → ' + trace.a_str + ' (' + trace.gg_cal + ' gg calendario)<br>';
+  html += '<div style="border-top:1px solid #7dd3fc; margin:4px 0;"></div>';
+  html += '<strong>① Fattore di Lavoro:</strong> ' + trace.dlav + ' gg ÷ 365 = <em>' + fl + '</em><br>';
+  html += '<strong>② Giorni operativi nel periodo:</strong> <em>' + trace.gg_operativi + ' gg</em> (Lun–Ven effettivi nel range date)<br>';
+  html += '<strong>③ Quota base ACS:</strong> ' + trace.baseAcsGg + ' Sm³/g × ' + trace.gg_operativi + ' gg = <em>' + trace.base_acs.toFixed(1) + ' Sm³</em><br>';
+  html += '<strong>④ Quota riscaldamento periodo:</strong> ' + trace.sm3_periodo + ' − ' + trace.base_acs.toFixed(1) + ' = <em>' + trace.risc_periodo.toFixed(1) + ' Sm³</em><br>';
+  if (trace.gg_quota_usata) {
+    html += '<strong>⑤ Destagionalizz. GG:</strong> ' + trace.risc_periodo.toFixed(1) + ' ÷ ' + trace.gg_quota_usata + '% = <em>' + Math.round(trace.risc_annuo) + ' Sm³/a</em>';
+    if (trace.zona_cl !== '—') html += ' &nbsp;<span style="color:#0369a1;">(Zona ' + trace.zona_cl + ' · GG/anno ' + trace.gg_anno + ')</span>';
+    html += '<br>';
+  } else {
+    html += '<strong>⑤ Proiezione proporzionale:</strong> ' + trace.risc_periodo.toFixed(1) + ' × 365/' + trace.gg_cal + ' = <em>' + Math.round(trace.risc_annuo) + ' Sm³/a</em> <span style="color:#dc2626;">(⚠ nessun dato GG disponibile)</span><br>';
+  }
+  html += '<strong>⑥ Base annua lavorativa:</strong> ' + trace.baseAcsGg + ' × ' + trace.dlav + ' gg = <em>' + Math.round(trace.base_annuo) + ' Sm³/a</em><br>';
+  html += '<div style="border-top:1px solid #7dd3fc; margin:4px 0;"></div>';
+  html += '<strong>⑦ Totale annuo rimodulato:</strong> ' + Math.round(trace.risc_annuo) + ' + ' + Math.round(trace.base_annuo) + ' = <strong style="color:#0c4a6e; font-size:13px;">' + trace.gas_sm3_annuo + ' Sm³/a</strong><br>';
+  if (hasAlert) {
+    var estMsg = estivo_operativo
+      ? '✅ Periodo estivo confermato operativo: nessuna riduzione applicata.'
+      : 'ℹ️ Periodo estivo: il carico riscaldamento è solitamente assente o ridotto.';
+    html += '<div style="background:#fef9c3;border:1px solid #fbbf24;border-radius:4px;padding:4px 6px;margin-top:4px;color:#92400e;">⚠️ <strong>Luglio/Agosto nel periodo</strong> — ' + estMsg + ' Verifica che il consumo non includa gas per processi produttivi da gestire separatamente.</div>';
+  }
+  el.innerHTML = html;
+}
+
+function setPdc(val) {
+  var cb = document.getElementById('pdc-attiva');
+  if (cb) { cb.checked = val; cb.dispatchEvent(new Event('change')); }
+  syncPdcBtns();
+  updateProdFromKwp(); syncSliders(); calc();
+}
+
+function syncPdcBtns() {
+  var cb  = document.getElementById('pdc-attiva');
+  var isOn = cb ? cb.checked : true;
+  var btnSi = document.getElementById('pdc-si');
+  var btnNo = document.getElementById('pdc-no');
+  if (btnSi) btnSi.classList.toggle('active', isOn);
+  if (btnNo) btnNo.classList.toggle('active', !isOn);
+}
+
+function closeAllInfo() {
+  document.querySelectorAll('.info-btn').forEach(function(btn) {
+    btn.classList.remove('active');
+  });
+  document.querySelectorAll('.info-hidden').forEach(function(el) {
+    el.style.display = 'none';
+  });
+}
+
+function toggleInfo(btn) {
+  var card = btn.closest('.card, .saldo-box, .eco-card');
+  if (!card) return;
+  var isOpen = btn.classList.contains('active');
+  var items = card.querySelectorAll('.info-hidden');
+  items.forEach(function(el) {
+    el.style.display = isOpen ? 'none' : (el.dataset.infoDisplay || 'block');
+  });
+  btn.classList.toggle('active', !isOpen);
+}
+
+// Init
+bindLiveEvents();
+initDivider();
+syncTipoBtns();
+syncLockBtns();
+syncPdcBtns();
+updateProdFromKwp();
+syncSliders();
+calc();
+closeAllInfo();
+</script>
+</body>
+</html>
